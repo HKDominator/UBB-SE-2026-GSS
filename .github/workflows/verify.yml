@@ -20,10 +20,10 @@ jobs:
         dotnet-version: 10.0.x
 
     - name: Restore Dependencies
-      run: dotnet restore Boards_WP.slnx
+      run: dotnet restore Events_GSS.slnx
 
     - name: Build Solution
-      run: dotnet build Boards_WP.slnx -c Debug --no-restore /p:Platform=x64 /p:PublishReadyToRun=false
+      run: dotnet build Events_GSS.slnx -c Debug --no-restore /p:Platform=x64 /p:PublishReadyToRun=false
 
     - name: Run Unit Tests
-      run: dotnet test Boards_WP.slnx -c Debug --no-build --verbosity normal /p:Platform=x64
+      run: dotnet test Events_GSS.slnx -c Debug --no-build --verbosity normal /p:Platform=x64
