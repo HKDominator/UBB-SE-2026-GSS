@@ -1,4 +1,5 @@
-﻿USE master;
+﻿
+Use master;
 GO
 
 IF DB_ID('ISSEvents') IS NOT NULL
