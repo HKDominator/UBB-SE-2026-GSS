@@ -6,11 +6,11 @@ namespace Events_GSS.Data.Models
 {
     public class AttendedEvent
     {
-        private Event Event { get; set; }
-        private User User { get; set; }
-        private DateTime EnrollmentDate { get; set; }
-        private Boolean IsArchived { get; set; }
-        private Boolean IsFavourite {  get; set; }
+        public Event Event { get; set; }
+        public User User { get; set; }
+        public DateTime EnrollmentDate { get; set; }
+        public Boolean IsArchived { get; set; }
+        public Boolean IsFavourite {  get; set; }
 
         public AttendedEvent(Event @event, User user, DateTime enrollmentDate, bool isArchived, bool isFavourite)
         {
@@ -20,5 +20,7 @@ namespace Events_GSS.Data.Models
             IsArchived = isArchived;
             IsFavourite = isFavourite;
         }
+
+        public AttendedEvent() { }
     }
 }
