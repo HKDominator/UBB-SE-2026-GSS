@@ -6,7 +6,7 @@ namespace Events_GSS.Data.Models
 {
     public class Category
     {
-        public int CategId { get; set; }
+        public int CategoryId { get; set; }
         public string Title { get; set; } = null!;
     }
 }

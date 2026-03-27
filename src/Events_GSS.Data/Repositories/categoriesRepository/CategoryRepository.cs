@@ -19,6 +19,6 @@ internal class CategoryRepository: ICategoryRepository
     public async Task<Category?> GetByIdAsync(int categoryId)
     {
         using var db = Database.DatabaseConnection.CreateContext();
-        return await db.Categories.FirstOrDefaultAsync(c => c.CategId == categoryId);
+        return await db.Categories.FirstOrDefaultAsync(c => c.CategoryId == categoryId);
     }
 }
