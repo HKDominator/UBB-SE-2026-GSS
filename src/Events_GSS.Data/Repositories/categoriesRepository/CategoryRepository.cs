@@ -29,8 +29,8 @@ public class CategoryRepository : ICategoryRepository
         {
             categories.Add(new Category
             {
-                CategoryId = reader.GetInt32("CategoryId"),
-                Title = reader.GetString("Title")
+                CategoryId = (int)reader["CategoryId"],
+                Title = (string)reader["Title"]
             });
         }
 
@@ -50,8 +50,8 @@ public class CategoryRepository : ICategoryRepository
         {
             return new Category
             {
-                CategoryId = reader.GetInt32("CategoryId"),
-                Title = reader.GetString("Title")
+                CategoryId = (int)reader["CategoryId"],
+                Title = (string)reader["Title"]
             };
         }
 
