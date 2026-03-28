@@ -21,9 +21,27 @@ public class AnnouncementRepository : IAnnouncementRepository
     {
         _connectionFactory = connectionFactory;
     }
-    public Task<int> AddAsync(Announcement announcement)
+    public async Task<int> AddAsync(Announcement announcement)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            await connection.OpenAsync();
+            string query = @"
+                    INSERT INTO Announcements (Message, Date, IsPinned, IsEdited, EventId, UserId)
+                    OUTPUT INSERTED.AnnId
+                    VALUES (@Message, @Date, @IsPinned, @IsEdited, @EventId, @UserId)";
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Message", announcement.Message);
+                command.Parameters.AddWithValue("@Date", announcement.Date);
+                command.Parameters.AddWithValue("@IsPinned", announcement.IsPinned);
+                command.Parameters.AddWithValue("@IsEdited", announcement.IsEdited);
+                //command.Parameters.AddWithValue("@EventId", announcement.Event.Id);
+                //command.Parameters.AddWithValue("@UserId", announcement.Author.Id);
+                var result = await command.ExecuteScalarAsync();
+                return Convert.ToInt32(result);
+            }
+        }
     }
 
     public Task AddReactionAsync(int announcementId, int userId, string emoji)
@@ -123,8 +141,24 @@ public class AnnouncementRepository : IAnnouncementRepository
         throw new NotImplementedException();
     }
 
-    public Task UpdateAsync(Announcement announcement)
+    public async Task UpdateAsync(Announcement announcement)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            await connection.OpenAsync();
+
+            string query = @"
+                   UPDATE Announcements
+                    SET Message = @Message, IsEdited = 1
+                    WHERE AnnId = @AnnId";
+            
+            using (SqlCommand command = new SqlCommand(query, connection))
+            {
+                command.Parameters.AddWithValue("@Message", announcement.Message);
+                command.Parameters.AddWithValue("@AnnId", announcement.Id);
+
+                await command.ExecuteNonQueryAsync();
+            }
+        }
     }
 }
