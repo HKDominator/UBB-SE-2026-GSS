@@ -25,21 +25,35 @@ public class AnnouncementRepository : IAnnouncementRepository
     {
         using (SqlConnection connection = _connectionFactory.CreateConnection())
         {
-            await connection.OpenAsync();
-            string query = @"
+            try
+            {
+                await connection.OpenAsync();
+                string query = @"
                     INSERT INTO Announcements (Message, Date, IsPinned, IsEdited, EventId, UserId)
                     OUTPUT INSERTED.AnnId
                     VALUES (@Message, @Date, @IsPinned, @IsEdited, @EventId, @UserId)";
-            using (SqlCommand command = new SqlCommand(query, connection))
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Message", announcement.Message);
+                    command.Parameters.AddWithValue("@Date", announcement.Date);
+                    command.Parameters.AddWithValue("@IsPinned", announcement.IsPinned);
+                    command.Parameters.AddWithValue("@IsEdited", announcement.IsEdited);
+                    //command.Parameters.AddWithValue("@EventId", announcement.Event.Id);
+                    //command.Parameters.AddWithValue("@UserId", announcement.Author.Id);
+                    var result = await command.ExecuteScalarAsync();
+                    return Convert.ToInt32(result);
+                }
+            }
+            catch (SqlException se)
             {
-                command.Parameters.AddWithValue("@Message", announcement.Message);
-                command.Parameters.AddWithValue("@Date", announcement.Date);
-                command.Parameters.AddWithValue("@IsPinned", announcement.IsPinned);
-                command.Parameters.AddWithValue("@IsEdited", announcement.IsEdited);
-                //command.Parameters.AddWithValue("@EventId", announcement.Event.Id);
-                //command.Parameters.AddWithValue("@UserId", announcement.Author.Id);
-                var result = await command.ExecuteScalarAsync();
-                return Convert.ToInt32(result);
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while adding the announcement.", ex);
             }
         }
     }
@@ -49,9 +63,34 @@ public class AnnouncementRepository : IAnnouncementRepository
         throw new NotImplementedException();
     }
 
-    public Task DeleteAsync(int announcementId)
+    public async Task DeleteAsync(int announcementId)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+                string query = @"
+                        DELETE FROM Announcements 
+                        WHERE AnnId = @AnnId";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AnnId", announcementId);
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while deleting the announcement.", ex);
+            }
+        }
     }
 
     public async Task<List<Announcement>> GetByEventAsync(int eventId, int userId)
@@ -60,9 +99,10 @@ public class AnnouncementRepository : IAnnouncementRepository
 
         using (SqlConnection connection = _connectionFactory.CreateConnection())
         {
-            await connection.OpenAsync();
-
-            string query = @"
+            try
+            {
+                await connection.OpenAsync();
+                string query = @"
             SELECT 
                 a.AnnId, a.Message, a.Date, a.IsPinned, a.IsEdited,
                 e.EventId, e.Name AS EventName, -- Adjust column names if needed
@@ -74,37 +114,48 @@ public class AnnouncementRepository : IAnnouncementRepository
             LEFT JOIN AnnouncementReadReceipts r ON a.AnnId = r.AnnouncementId AND r.UserId = @UserId
             WHERE a.EventId = @EventId
             ORDER BY a.IsPinned DESC, a.Date DESC";
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@EventId", eventId);
-                command.Parameters.AddWithValue("@UserId", userId);
-                using (SqlDataReader reader = await command.ExecuteReaderAsync()) 
+                using (SqlCommand command = new SqlCommand(query, connection))
                 {
-                    while( await reader.ReadAsync())
+                    command.Parameters.AddWithValue("@EventId", eventId);
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
                     {
-                        var announcement = new Announcement(
-                            id : reader.GetInt32(reader.GetOrdinal("AnnId")),
-                            message : reader.GetString(reader.GetOrdinal("Message")),
-                            date : reader.GetDateTime(reader.GetOrdinal("Date")))
-                        { 
-                            IsPinned = reader.GetBoolean(reader.GetOrdinal("IsPinned")),
-                            IsEdited = reader.GetBoolean(reader.GetOrdinal("IsEdited")),
-                            IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead")),
-                            //Event = new Event
-                            //{
-                            //    Id = reader.GetInt32(reader.GetOrdinal("EventId")),
-                            //    Name = reader.GetString(reader.GetOrdinal("EventName"))
-                            //},
-                            //Author = new Author
-                            //{
-                            //    Id = reader.GetInt32(reader.GetOrdinal("UserId")),
-                            //    Name = reader.GetString(reader.GetOrdinal("UserName"))
-                            //}
-                        };
+                        while (await reader.ReadAsync())
+                        {
+                            var announcement = new Announcement(
+                                id: reader.GetInt32(reader.GetOrdinal("AnnId")),
+                                message: reader.GetString(reader.GetOrdinal("Message")),
+                                date: reader.GetDateTime(reader.GetOrdinal("Date")))
+                            {
+                                IsPinned = reader.GetBoolean(reader.GetOrdinal("IsPinned")),
+                                IsEdited = reader.GetBoolean(reader.GetOrdinal("IsEdited")),
+                                IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead")),
+                                //Event = new Event
+                                //{
+                                //    Id = reader.GetInt32(reader.GetOrdinal("EventId")),
+                                //    Name = reader.GetString(reader.GetOrdinal("EventName"))
+                                //},
+                                //Author = new Author
+                                //{
+                                //    Id = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                //    Name = reader.GetString(reader.GetOrdinal("UserName"))
+                                //}
+                            };
 
-                        announcements.Add(announcement);
+                            announcements.Add(announcement);
+                        }
                     }
                 }
+            }catch(SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while retrieving announcements.", ex);
             }
         }
 
@@ -126,9 +177,36 @@ public class AnnouncementRepository : IAnnouncementRepository
         throw new NotImplementedException();
     }
 
-    public Task PinAsync(int announcementId, int eventId)
+    public async Task PinAsync(int announcementId, int eventId)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+                string query = @"
+                    UPDATE Announcements
+                    SET IsPinned = 1
+                    WHERE AnnId = @AnnId AND EventId = @EventId";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AnnId", announcementId);
+                    command.Parameters.AddWithValue("@EventId", eventId);
+                    command.ExecuteNonQuery();
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while pinning the announcement.", ex);
+            }
+        }
     }
 
     public Task RemoveReactionAsync(int announcementId, int userId)
@@ -145,19 +223,34 @@ public class AnnouncementRepository : IAnnouncementRepository
     {
         using (SqlConnection connection = _connectionFactory.CreateConnection())
         {
-            await connection.OpenAsync();
+            try
+            {
+                await connection.OpenAsync();
 
-            string query = @"
+                string query = @"
                    UPDATE Announcements
                     SET Message = @Message, IsEdited = 1
                     WHERE AnnId = @AnnId";
-            
-            using (SqlCommand command = new SqlCommand(query, connection))
-            {
-                command.Parameters.AddWithValue("@Message", announcement.Message);
-                command.Parameters.AddWithValue("@AnnId", announcement.Id);
 
-                await command.ExecuteNonQueryAsync();
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@Message", announcement.Message);
+                    command.Parameters.AddWithValue("@AnnId", announcement.Id);
+
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException sx)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {sx.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while updating the announcement.", ex);
             }
         }
     }
