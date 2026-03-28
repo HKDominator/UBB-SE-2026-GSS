@@ -2,6 +2,7 @@
 using System.Data;
 using Events_GSS.Data.Models;
 using Microsoft.Data.SqlClient;
+using Events_GSS.Data.Database.SqlConnectionFactory;
 
 namespace Events_GSS.Data.Repositories.eventRepository;
 

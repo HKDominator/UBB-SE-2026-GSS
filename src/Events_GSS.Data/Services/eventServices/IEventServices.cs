@@ -1,7 +1,7 @@
 ﻿using System;
 using Events_GSS.Data.Models;
 
-namespace Events_GSS.Data.Repositories.eventRepository;
+namespace Events_GSS.Data.Services.eventServices;
 
 public interface IEventService
 {

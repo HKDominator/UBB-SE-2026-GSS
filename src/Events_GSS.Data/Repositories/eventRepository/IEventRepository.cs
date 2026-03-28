@@ -1,5 +1,8 @@
 ﻿using System;
+using Events_GSS.Data.Models;
+
 namespace Events_GSS.Data.Repositories.eventRepository;
+
 
 public interface IEventRepository
 {
