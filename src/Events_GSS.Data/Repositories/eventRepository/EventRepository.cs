@@ -20,7 +20,7 @@ public class EventRepository: IEventRepository
         await connection.OpenAsync();
 
         var command = new SqlCommand(@"SELECT E.*, C.Title as CategoryTitle,
-                                      u.userId as UserId, u.Name as Name,
+                                      u.UserId as UserId, u.Name as UserName,
                                       (SELECT COUNT(*) FROM AttendedEvents AE WHERE AE.EventId = E.EventId) AS EnrolledCount
                                     FROM EVENTS E
                                     LEFT JOIN CATEGORIES C ON E.CategoryId = C.CategoryId
@@ -44,7 +44,7 @@ public class EventRepository: IEventRepository
 
         var cmd = new SqlCommand(@"
             SELECT e.*, c.Title as CategoryTitle, 
-            u.Id as UserId, u.Name as Name,
+            u.UserId as UserId, u.Name as UserName,
             (SELECT COUNT(*) FROM AttendedEvents ae WHERE ae.EventId = e.EventId) AS EnrolledCount
             FROM Events e
             LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
@@ -79,7 +79,7 @@ public class EventRepository: IEventRepository
         cmd.Parameters.AddWithValue("@MaxPeople", (object?)eventEntity.MaximumPeople ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@Banner", (object?)eventEntity.EventBannerPath ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@CategoryId", (object?)eventEntity.CategoryId ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@CreatedBy", eventEntity.CreatedBy);
+        cmd.Parameters.AddWithValue("@CreatedBy", eventEntity.CreatedBy?.UserId?? throw new ArgumentNullException("CreatedBy is required"));
 
         await cmd.ExecuteNonQueryAsync();
     }
@@ -145,7 +145,7 @@ public class EventRepository: IEventRepository
         CreatedBy=reader.IsDBNull("UserId") ? null : new User
         {
             UserId = reader.GetInt32("UserId"),
-            Name = reader.GetString("Name")
+            Name = reader.GetString("UserName")
         },
         SlowModeSeconds = reader.IsDBNull("SlowModeSeconds") ? null : reader.GetInt32("SlowModeSeconds"),
         CategoryTitle = reader.IsDBNull("CategoryTitle") ? null : reader.GetString("CategoryTitle"),
