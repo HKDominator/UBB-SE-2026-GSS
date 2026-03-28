@@ -8,5 +8,5 @@ namespace Events_GSS.Data.Repositories.categoriesRepository;
 public interface ICategoryRepository
 {
     Task<List<Category>> GetAllAsync();
-    Task<Category> GetByIdAsync(int categoryId);
+    Task<Category?> GetByIdAsync(int categoryId);
 }
