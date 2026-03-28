@@ -1,7 +1,7 @@
 ﻿using System;
 
 namespace Events_GSS.Data.Models;
-{
+
     public class EventEntity
     {
 	    public int EventId { get; set; }
@@ -15,10 +15,9 @@ namespace Events_GSS.Data.Models;
         public int? MaximumPeople { get; set; }
         public string? EventBannerPath { get; set; }
         public int? CategoryId { get; set; }
-        public int CreatedBy { get; set; }
+        public User? CreatedBy { get; set; }
         public int? SlowModeSeconds {  get; set; }
         
         public string? CategoryTitle { get; set; }
-        public int EnrolledCount { get; set; }
-
-}
+        public int EnrolledCount { get; set; } = 0;
+    }

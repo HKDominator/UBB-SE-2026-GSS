@@ -54,4 +54,10 @@ public class EventService: IEventService
         return all.Where(e => e.StartDateTime.Date >= from.Date &&
             e.StartDateTime.Date <= to.Date).ToList();
     }
+
+    public async Task<List<EventEntity>> SearchByTitleAsync(string title)
+    {
+        var all = await _eventRepository.GetAllPublicActiveAsync();
+        return all.Where(e => e.Name.Contains(title, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
 }

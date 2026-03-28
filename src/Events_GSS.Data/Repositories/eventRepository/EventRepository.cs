@@ -19,9 +19,12 @@ public class EventRepository: IEventRepository
         using var connection=_connectionFactory.CreateConnection();
         await connection.OpenAsync();
 
-        var command = new SqlCommand(@"SELECT E.*, C.Title as CategoryTitle, (SELECT COUNT(*) FROM AttendedEvents AE WHERE AE.EventId = E.EventId) AS EnrolledCount
+        var command = new SqlCommand(@"SELECT E.*, C.Title as CategoryTitle,
+                                      u.userId as UserId, u.Name as Name,
+                                      (SELECT COUNT(*) FROM AttendedEvents AE WHERE AE.EventId = E.EventId) AS EnrolledCount
                                     FROM EVENTS E
                                     LEFT JOIN CATEGORIES C ON E.CategoryId = C.CategoryId
+                                    LEFT JOIN Users u ON E.CreatedBy = u.UserId
                                     WHERE E.IsPublic = 1 AND E.EndDateTime > GETUTCDATE()
                                     ORDER BY E.StartDateTime ASC", connection);
         
@@ -40,9 +43,12 @@ public class EventRepository: IEventRepository
         await conn.OpenAsync();
 
         var cmd = new SqlCommand(@"
-            SELECT e.*, c.Title as CategoryTitle, (SELECT COUNT(*) FROM AttendedEvents ae WHERE ae.EventId = e.EventId) AS EnrolledCount
+            SELECT e.*, c.Title as CategoryTitle, 
+            u.Id as UserId, u.Name as Name,
+            (SELECT COUNT(*) FROM AttendedEvents ae WHERE ae.EventId = e.EventId) AS EnrolledCount
             FROM Events e
             LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
+            LEFT JOIN Users u ON e.CreatedBy = u.UserId
             WHERE e.EventId = @EventId", conn);
         cmd.Parameters.AddWithValue("@EventId", eventId);
 
@@ -136,7 +142,11 @@ public class EventRepository: IEventRepository
         MaximumPeople = reader.IsDBNull("MaximumPeople") ? null : reader.GetInt32("MaximumPeople"),
         EventBannerPath = reader.IsDBNull("EventBannerPath") ? null : reader.GetString("EventBannerPath"),
         CategoryId = reader.IsDBNull("CategoryId") ? null : reader.GetInt32("CategoryId"),
-        CreatedBy = reader.GetInt32("CreatedBy"),
+        CreatedBy=reader.IsDBNull("UserId") ? null : new User
+        {
+            UserId = reader.GetInt32("UserId"),
+            Name = reader.GetString("Name")
+        },
         SlowModeSeconds = reader.IsDBNull("SlowModeSeconds") ? null : reader.GetInt32("SlowModeSeconds"),
         CategoryTitle = reader.IsDBNull("CategoryTitle") ? null : reader.GetString("CategoryTitle"),
         EnrolledCount = reader.GetInt32("EnrolledCount"),
