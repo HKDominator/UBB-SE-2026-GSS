@@ -6,9 +6,9 @@ namespace Events_GSS.Data.Repositories.eventRepository;
 
 public interface IEventRepository
 {
-    Task<List<EventEntity>> GetAllPublicActiveAsync();
-    Task<EventEntity?> GetByIdAsync(int eventId);
-    Task AddAsync(EventEntity eventEntity);
-    Task UpdateAsync(EventEntity eventEntity);
+    Task<List<Event>> GetAllPublicActiveAsync();
+    Task<Event?> GetByIdAsync(int eventId);
+    Task AddAsync(Event eventEntity);
+    Task UpdateAsync(Event eventEntity);
     Task DeleteAsync(int eventId);
 };

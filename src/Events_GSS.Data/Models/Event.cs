@@ -2,7 +2,7 @@
 
 namespace Events_GSS.Data.Models;
 
-    public class EventEntity
+    public class Event
     {
 	    public int EventId { get; set; }
         public string Name { get; set; } = null!;
@@ -14,10 +14,9 @@ namespace Events_GSS.Data.Models;
         public string? Description { get; set; }
         public int? MaximumPeople { get; set; }
         public string? EventBannerPath { get; set; }
-        public int? CategoryId { get; set; }
+        public Category? Category { get; set; }
         public User? CreatedBy { get; set; }
         public int? SlowModeSeconds {  get; set; }
-        
-        public string? CategoryTitle { get; set; }
+       
         public int EnrolledCount { get; set; } = 0;
     }
