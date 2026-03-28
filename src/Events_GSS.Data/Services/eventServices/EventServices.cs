@@ -27,4 +27,31 @@ public class EventService: IEventService
 
     public async Task DeleteEventAsync(int eventId)
         => await _eventRepository.DeleteAsync(eventId);
+
+
+    public async Task<List<EventEntity>> FilterByCategoryAsync(string category)
+    {
+        var all = await _eventRepository.GetAllPublicActiveAsync();
+        return all.Where(e => e.CategoryTitle != null &&
+            e.CategoryTitle.Equals(category, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    public async Task<List<EventEntity>> FilterByLocationAsync(string location)
+    {
+        var all = await _eventRepository.GetAllPublicActiveAsync();
+        return all.Where(e => e.Name.Contains(location, StringComparison.OrdinalIgnoreCase)).ToList();
+    }
+
+    public async Task<List<EventEntity>> FilterByDateAsync(DateTime date)
+    {
+        var all = await _eventRepository.GetAllPublicActiveAsync();
+        return all.Where(e => e.StartDateTime.Date == date.Date).ToList();
+    }
+
+    public async Task<List<EventEntity>> FilterByDateRangeAsync(DateTime from, DateTime to)
+    {
+        var all = await _eventRepository.GetAllPublicActiveAsync();
+        return all.Where(e => e.StartDateTime.Date >= from.Date &&
+            e.StartDateTime.Date <= to.Date).ToList();
+    }
 }
