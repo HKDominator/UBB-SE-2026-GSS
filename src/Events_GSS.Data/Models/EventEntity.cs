@@ -5,7 +5,7 @@ namespace Events_GSS.Data.Models;
     public class EventEntity
     {
 	    public int EventId { get; set; }
-        public string Name { get; set; }=null!
+        public string Name { get; set; } = null!;
         public double LocationLat { get; set; }
         public double LocationLng { get; set; }
         public DateTime StartDateTime {  get; set; }
