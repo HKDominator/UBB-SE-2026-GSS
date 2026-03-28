@@ -26,7 +26,7 @@ public class EventRepository: IEventRepository
                 (SELECT COUNT(*) FROM AttendedEvents AE WHERE AE.EventId = E.EventId) AS EnrolledCount
             FROM Events E
             LEFT JOIN Categories C ON E.CategoryId = C.CategoryId
-            LEFT JOIN Users u ON E.CreatedBy = u.UserId
+            LEFT JOIN Users u ON E.AdminId = u.UserId
             WHERE E.IsPublic = 1 AND E.EndDateTime > GETUTCDATE()
             ORDER BY E.StartDateTime ASC", connection);
         
@@ -50,7 +50,7 @@ public class EventRepository: IEventRepository
                 (SELECT COUNT(*) FROM AttendedEvents ae WHERE ae.EventId = e.EventId) AS EnrolledCount
             FROM Events e
             LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
-            LEFT JOIN Users u ON e.CreatedBy = u.UserId
+            LEFT JOIN Users u ON e.AdminId = u.UserId
             WHERE e.EventId = @EventId", conn);
 
         cmd.Parameters.AddWithValue("@EventId", eventId);
@@ -66,15 +66,14 @@ public class EventRepository: IEventRepository
 
         var cmd = new SqlCommand(@"
             INSERT INTO Events 
-                (Name, LocationLat, LocationLng, StartDateTime, EndDateTime, 
-                 IsPublic, Description, MaximumPeople, EventBannerPath, CategoryId, CreatedBy)
+                (Name, Location, StartDateTime, EndDateTime, 
+                 IsPublic, Description, MaximumPeople, EventBannerPath, CategoryId, AdminId)
             VALUES 
-                (@Name, @Lat, @Lng, @Start, @End,
-                 @IsPublic, @Desc, @MaxPeople, @Banner, @CategoryId, @CreatedBy)", conn);
+                (@Name, @Location, @Start, @End,
+                 @IsPublic, @Desc, @MaxPeople, @Banner, @CategoryId, @AdminId)", conn);
 
         cmd.Parameters.AddWithValue("@Name", eventEntity.Name);
-        cmd.Parameters.AddWithValue("@Lat", eventEntity.LocationLat);
-        cmd.Parameters.AddWithValue("@Lng", eventEntity.LocationLng);
+        cmd.Parameters.AddWithValue("@Location", eventEntity.Location);
         cmd.Parameters.AddWithValue("@Start", eventEntity.StartDateTime);
         cmd.Parameters.AddWithValue("@End", eventEntity.EndDateTime);
         cmd.Parameters.AddWithValue("@IsPublic", eventEntity.IsPublic);
@@ -82,7 +81,7 @@ public class EventRepository: IEventRepository
         cmd.Parameters.AddWithValue("@MaxPeople", (object?)eventEntity.MaximumPeople ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@Banner", (object?)eventEntity.EventBannerPath ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@CategoryId", (object?)eventEntity.Category?.CategoryId ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@CreatedBy", eventEntity.CreatedBy?.UserId ?? throw new ArgumentNullException("CreatedBy is required"));
+        cmd.Parameters.AddWithValue("@AdminId", eventEntity.Admin?.UserId ?? throw new ArgumentNullException("AdminId is required"));
 
         await cmd.ExecuteNonQueryAsync();
     }
@@ -95,8 +94,7 @@ public class EventRepository: IEventRepository
         var cmd = new SqlCommand(@"
             UPDATE Events SET
                 Name = @Name,
-                LocationLat = @Lat,
-                LocationLng = @Lng,
+                Location= @Location,
                 StartDateTime = @Start,
                 EndDateTime = @End,
                 IsPublic = @IsPublic,
@@ -108,8 +106,7 @@ public class EventRepository: IEventRepository
 
         cmd.Parameters.AddWithValue("@EventId", eventEntity.EventId);
         cmd.Parameters.AddWithValue("@Name", eventEntity.Name);
-        cmd.Parameters.AddWithValue("@Lat", eventEntity.LocationLat);
-        cmd.Parameters.AddWithValue("@Lng", eventEntity.LocationLng);
+        cmd.Parameters.AddWithValue("@Location", eventEntity.Location);
         cmd.Parameters.AddWithValue("@Start", eventEntity.StartDateTime);
         cmd.Parameters.AddWithValue("@End", eventEntity.EndDateTime);
         cmd.Parameters.AddWithValue("@IsPublic", eventEntity.IsPublic);
@@ -136,8 +133,7 @@ public class EventRepository: IEventRepository
     {
         EventId = reader.GetInt32("EventId"),
         Name = reader.GetString("Name"),
-        LocationLat = reader.GetDouble("LocationLat"),
-        LocationLng = reader.GetDouble("LocationLng"),
+        Location=reader.GetString("Location"),
         StartDateTime = reader.GetDateTime("StartDateTime"),
         EndDateTime = reader.GetDateTime("EndDateTime"),
         IsPublic = reader.GetBoolean("IsPublic"),
@@ -150,7 +146,7 @@ public class EventRepository: IEventRepository
             CategoryId = (int)reader["CategoryId"],
             Title = (string)reader["CategoryTitle"]
         },
-        CreatedBy =reader.IsDBNull("UserId") ? null : new User
+        Admin =reader.IsDBNull("UserId") ? null : new User
         {
             UserId = reader.GetInt32("UserId"),
             Name = reader.GetString("UserName")
