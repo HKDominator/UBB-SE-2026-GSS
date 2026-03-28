@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Microsoft.Identity.Client;
-
 namespace Events_GSS.Data.Models;
 
 public class AnnouncementReaction

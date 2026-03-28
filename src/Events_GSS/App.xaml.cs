@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
 using Microsoft.UI.Xaml.Data;
@@ -16,6 +17,9 @@ using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 
+using Microsoft.Extensions.DependencyInjection;
+using Events_GSS.Data.Database;
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -32,9 +36,22 @@ namespace Events_GSS
         /// Initializes the singleton application object.  This is the first line of authored code
         /// executed, and as such is the logical equivalent of main() or WinMain().
         /// </summary>
+        /// 
+        public new static App Current => (App)Application.Current;
+        public IServiceProvider Services { get; }
         public App()
         {
             InitializeComponent();
+            IConfiguration configuration = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+                .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
+                .Build();
+            var services = new ServiceCollection();
+            string connectionString = configuration.GetConnectionString("DefaultConnection");
+            services.AddSingleton(new SqlConnectionFactory(connectionString));
+
+            Services = services.BuildServiceProvider();
         }
 
         /// <summary>

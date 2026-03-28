@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 
-using Microsoft.Identity.Client;
-
 namespace Events_GSS.Data.Models
 {
     public class Announcement
@@ -29,7 +27,7 @@ namespace Events_GSS.Data.Models
         }
 
         public int Id { get; set; }
-        public required string Message { get; set; }
+        public string Message { get; set; }
         public DateTime Date { get; set; }
 
         public bool IsPinned { get; set; }
