@@ -31,11 +31,16 @@ public partial class QuestAdminViewModel : ObservableObject
     public ObservableCollection<Quest> Quests { get; }
     public ObservableCollection<Quest> PresetQuests { get; }
 
+    //aux
     [ObservableProperty]
     public partial bool IsPaneOpen { get; set; } = true;
     [RelayCommand]
     private void TogglePane() => IsPaneOpen = !IsPaneOpen;
 
+    [RelayCommand]
+    private void ClearPrerequisite() => SelectedPrerequisiteQuest = null;
+
+    //quest management
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddCustomQuestCommand))]
     public partial string NewQuestName { get; set; } = string.Empty;
@@ -55,7 +60,13 @@ public partial class QuestAdminViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeleteQuestCommand))]
     public partial Quest? SelectedQuest { get; set; }
-    
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasPrerequisiteSelected))]
+    public partial Quest? SelectedPrerequisiteQuest { get; set; }
+
+    public bool HasPrerequisiteSelected => SelectedPrerequisiteQuest is not null;
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddCustomQuestCommand))]
     [NotifyCanExecuteChangedFor(nameof(AddPresetQuestCommand))]
@@ -89,6 +100,7 @@ public partial class QuestAdminViewModel : ObservableObject
                 Name = NewQuestName.Trim(),
                 Description = NewQuestDescription.Trim(),
                 Difficulty = NewQuestDifficulty,
+                PrerequisiteQuest = SelectedPrerequisiteQuest
             };
 
             var newId = await _questService.AddQuestAsync(_event, quest);
@@ -98,6 +110,7 @@ public partial class QuestAdminViewModel : ObservableObject
             NewQuestName = string.Empty;
             NewQuestDescription = string.Empty;
             NewQuestDifficulty = 1;
+            SelectedPrerequisiteQuest = null;
         }
         catch (Exception ex)
         {
@@ -183,16 +196,15 @@ public partial class QuestAdminViewModel : ObservableObject
         ErrorMessage = null;
         try
         {
-            var quests = await _questService.GetQuestsAsync(_event);
-            Debug.WriteLine("On load nr quests is: "+quests.Count);
             var presets = await _questService.GetPresetQuestsAsync();
+            PresetQuests.Clear();
+            foreach (var p in presets) PresetQuests.Add(p);
 
+            var quests = await _questService.GetQuestsAsync(_event);
             Quests.Clear();
             foreach (var q in quests) Quests.Add(q);
 
-            PresetQuests.Clear();
-            foreach (var p in presets) PresetQuests.Add(p);
-            Debug.WriteLine(PresetQuests);
+            
         }
         catch (Exception ex)
         {

@@ -65,7 +65,15 @@ public class QuestRepository : IQuestRepository
         try{
             await connection.OpenAsync();
 
-            const string query = "SELECT * FROM Quests WHERE EventId = @EventId";
+            const string query = 
+                    "SELECT " +
+                    "q.*, "+ 
+                    "p.Name AS P_Name, "+
+                    "p.Description AS P_Description, "+
+                    "p.Difficulty AS P_Difficulty "+
+                    "FROM Quests q "+
+                    "LEFT JOIN Quests p ON q.PrerequisiteQuestId = p.QuestId "+
+                    "WHERE q.EventId = @EventId";
 
             using var command = new SqlCommand(query, connection);
             command.Parameters.AddWithValue("@EventId", fromEvent.EventId);
@@ -73,7 +81,7 @@ public class QuestRepository : IQuestRepository
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
-                quests.Add(MapQuestFromReader(reader));
+                quests.Add(await MapQuestFromReader(reader));
             }
 
             return quests;
@@ -104,7 +112,7 @@ public class QuestRepository : IQuestRepository
 
             using var reader = await command.ExecuteReaderAsync();
             
-            Quest quest= MapQuestFromReader(reader);
+            Quest quest= await MapQuestFromReader(reader);
             return quest;
         }
         catch (SqlException ex)
@@ -132,7 +140,7 @@ public class QuestRepository : IQuestRepository
     }
 
     // Helpers
-    private Quest MapQuestFromReader(SqlDataReader reader)
+    private async Task<Quest> MapQuestFromReader(SqlDataReader reader)
     {
         var quest = new Quest
         {
@@ -146,8 +154,16 @@ public class QuestRepository : IQuestRepository
         int prereqOrdinal = reader.GetOrdinal("PrerequisiteQuestId");
         if (!reader.IsDBNull(prereqOrdinal))
         {
-            int questId = reader.GetInt32(prereqOrdinal);
-            quest.PrerequisiteQuest = GetQuestByIdAsync(questId).Result;
+
+            var prereqQuest = new Quest
+            {
+                Id=reader.GetInt32(reader.GetOrdinal("PrerequisiteQuestId")),
+                Name = reader.GetString(reader.GetOrdinal("P_Name")),
+                Description = reader.GetString(reader.GetOrdinal("P_Description")),
+                Difficulty = reader.GetInt32(reader.GetOrdinal("P_Difficulty")),
+            };
+            quest.PrerequisiteQuest = prereqQuest;
+
         }
         
 
