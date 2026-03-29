@@ -19,7 +19,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
 
         //TODO PlaceHolder for event data, replace when navigation is implemented
-        var currentEvent = new Event { Id = 1 };
+        var currentEvent = new Event { EventId = 1 };
 
         IQuestService questService = new QuestService(
             new QuestRepository(

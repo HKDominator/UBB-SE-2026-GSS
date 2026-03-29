@@ -37,7 +37,7 @@ public class QuestRepository : IQuestRepository
             command.Parameters.AddWithValue("@Name", quest.Name);
             command.Parameters.AddWithValue("@Description", quest.Description);
             command.Parameters.AddWithValue("@Difficulty", quest.Difficulty);
-            command.Parameters.AddWithValue("@EventId", toEvent.Id);
+            command.Parameters.AddWithValue("@EventId", toEvent.EventId);
             if (quest.PrerequisiteQuest is null)
                 command.Parameters.AddWithValue("@PrereqId", DBNull.Value);
             else
@@ -68,7 +68,7 @@ public class QuestRepository : IQuestRepository
             const string query = "SELECT * FROM Quests WHERE EventId = @EventId";
 
             using var command = new SqlCommand(query, connection);
-            command.Parameters.AddWithValue("@EventId", fromEvent.Id);
+            command.Parameters.AddWithValue("@EventId", fromEvent.EventId);
 
             using var reader = await command.ExecuteReaderAsync();
             while (await reader.ReadAsync())
