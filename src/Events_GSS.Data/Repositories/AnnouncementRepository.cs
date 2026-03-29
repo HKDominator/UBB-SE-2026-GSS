@@ -214,9 +214,36 @@ public class AnnouncementRepository : IAnnouncementRepository
         throw new NotImplementedException();
     }
 
-    public Task UnpinAsync(int eventId)
+    public async Task UnpinAsync(int eventId)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+
+                string query = @"
+                   UPDATE Announcements
+                    SET IsPinned = 0
+                    WHERE EventId = @EventId";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@EventId", eventId);
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while unpinning announcements.", ex);
+            }
+        }
     }
 
     public async Task UpdateAsync(Announcement announcement)
