@@ -4,7 +4,6 @@ using Microsoft.UI.Xaml;
 
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
-using Events_GSS.Data.Repositories.Interfaces;
 using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Data.Services; 
 using Events_GSS.ViewModels;

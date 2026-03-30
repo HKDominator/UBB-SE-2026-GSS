@@ -60,12 +60,12 @@ public class AnnouncementService : IAnnouncementService
 
     public Task<List<AnnouncementReadReceipt>> GetReadReceiptsAsync(int annId, int userId)
     {
-        throw new NotImplementedException();
+        return _announcementRepository.GetReadReceiptsAsync(annId);
     }
 
-    public Task MarkAsReadAsync(int annId, int userId)
+    public async Task MarkAsReadAsync(int annId, int userId)
     {
-        throw new NotImplementedException();
+        await _announcementRepository.MarkAsReadAsync(annId, userId);
     }
 
     public async Task PinAnnouncementAsync(int annId, int eventId, int userId)
@@ -74,14 +74,14 @@ public class AnnouncementService : IAnnouncementService
         await _announcementRepository.PinAsync(annId, eventId);
     }
 
-    public Task ReactAsync(int annId, int userId, string emoji)
+    public async Task ReactAsync(int annId, int userId, string emoji)
     {
-        throw new NotImplementedException();
+        await _announcementRepository.AddReactionAsync(annId, userId, emoji);
     }
 
-    public Task RemoveReactionAsync(int annId, int userId)
+    public async Task RemoveReactionAsync(int annId, int userId)
     {
-        throw new NotImplementedException();
+        await _announcementRepository.RemoveReactionAsync(annId, userId);
     }
 
     public async Task UpdateAnnouncementAsync(int announcementId, string newMessage, int userId)
