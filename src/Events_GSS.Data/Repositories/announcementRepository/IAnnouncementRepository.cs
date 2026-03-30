@@ -16,10 +16,10 @@ public interface IAnnouncementRepository
     Task PinAsync(int announcementId, int eventId);
     Task UnpinAsync(int eventId);
     Task MarkAsReadAsync(int announcementId, int userId);
-    Task<List<int>> GetReadReceiptsAsync(int announcementId);
+    Task<List<AnnouncementReadReceipt>> GetReadReceiptsAsync(int announcementId);
     Task AddReactionAsync(int announcementId, int userId, string emoji);
     Task RemoveReactionAsync(int announcementId, int userId);
-    Task<List<AnnouncementReaction>> GetReactionsAsync(int announcementId);
+    Task<List<ReactionCounter>> GetReactionsAsync(int announcementId);
 
 
 }

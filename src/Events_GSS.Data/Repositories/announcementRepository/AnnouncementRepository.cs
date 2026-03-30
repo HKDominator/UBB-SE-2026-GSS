@@ -11,7 +11,7 @@ using Events_GSS.Data.Repositories.Interfaces;
 using Microsoft.Data.SqlClient;
 
 using static System.Runtime.InteropServices.JavaScript.JSType;
-namespace Events_GSS.Data.Repositories;
+namespace Events_GSS.Data.Repositories.announcementRepository;
 
 public class AnnouncementRepository : IAnnouncementRepository
 {
@@ -58,9 +58,45 @@ public class AnnouncementRepository : IAnnouncementRepository
         }
     }
 
-    public Task AddReactionAsync(int announcementId, int userId, string emoji)
+    public async Task AddReactionAsync(int announcementId, int userId, string emoji)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+                string query = @"
+                    IF EXISTS (SELECT 1 FROM AnnouncementReactions WHERE AnnouncementId = @AnnouncementId AND UserId = @UserId)
+                BEGIN
+                    UPDATE AnnouncementReactions
+                    SET Emoji = @Emoji
+                    WHERE AnnouncementId = @AnnouncementId AND UserId = @UserId
+                END
+                ELSE
+                BEGIN
+                    INSERT INTO AnnouncementReactions (AnnouncementId, UserId, Emoji)
+                    VALUES (@AnnouncementId, @UserId, @Emoji)
+                END";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AnnouncementId", announcementId);
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    command.Parameters.AddWithValue("@Emoji", emoji);
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while adding the reaction.", ex);
+            }
+        }
     }
 
     public async Task DeleteAsync(int announcementId)
@@ -130,16 +166,16 @@ public class AnnouncementRepository : IAnnouncementRepository
                                 IsPinned = reader.GetBoolean(reader.GetOrdinal("IsPinned")),
                                 IsEdited = reader.GetBoolean(reader.GetOrdinal("IsEdited")),
                                 IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead")),
-                                //Event = new Event
-                                //{
-                                //    Id = reader.GetInt32(reader.GetOrdinal("EventId")),
-                                //    Name = reader.GetString(reader.GetOrdinal("EventName"))
-                                //},
-                                //Author = new Author
-                                //{
-                                //    Id = reader.GetInt32(reader.GetOrdinal("UserId")),
-                                //    Name = reader.GetString(reader.GetOrdinal("UserName"))
-                                //}
+                                Event = new Event
+                                {
+                                    EventId = reader.GetInt32(reader.GetOrdinal("EventId")),
+                                    Name = reader.GetString(reader.GetOrdinal("EventName"))
+                                },
+                                Author = new User
+                                {
+                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    Name = reader.GetString(reader.GetOrdinal("UserName"))
+                                }
                             };
 
                             announcements.Add(announcement);
@@ -162,19 +198,137 @@ public class AnnouncementRepository : IAnnouncementRepository
         return announcements;
     }
 
-    public Task<List<AnnouncementReaction>> GetReactionsAsync(int announcementId)
+    public async Task<List<ReactionCounter>> GetReactionsAsync(int announcementId)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+
+                string query = @"
+                        SELECT Emoji, COUNT(*) as ReactionCount
+                    FROM AnnouncementReactions
+                    WHERE AnnouncementId = @AnnouncementId
+                    GROUP BY Emoji";
+
+                using (SqlCommand command = new SqlCommand(query, connection)) 
+                { 
+                    command.Parameters.AddWithValue("@AnnouncementId", announcementId);
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        var reactions = new List<ReactionCounter>();
+                        while (await reader.ReadAsync())
+                        {
+                            reactions.Add(new ReactionCounter 
+                            {
+                                Emoji = reader.GetString(reader.GetOrdinal("Emoji")),
+                                Count = reader.GetInt32(reader.GetOrdinal("ReactionCount"))
+                            });
+
+                        }
+                        return reactions;
+                    }
+                }
+
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while retrieving the reactions.", ex);
+            }
+        }
     }
 
-    public Task<List<int>> GetReadReceiptsAsync(int announcementId)
+    public async Task<List<AnnouncementReadReceipt>> GetReadReceiptsAsync(int announcementId)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+
+                string query = @"
+                   SELECT u.Id as UserId, u.Name as UserName, r.ReadAt
+                   FROM AnnouncementReadReceipts as r
+                   INNER JOIN Users u ON r.UserId = u.Id
+                   WHERE r.AnnouncementId = @AnnouncementId
+                   ORDER BY r.ReadAt ASC";
+
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AnnouncementId", announcementId);
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        var receipts = new List<AnnouncementReadReceipt>();
+                        while (await reader.ReadAsync())
+                        {
+                            receipts.Add(new AnnouncementReadReceipt
+                            {
+                                User = new User
+                                {
+                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                                    Name = reader.GetString(reader.GetOrdinal("UserName"))
+                                },
+                                ReadAt = reader.GetDateTime(reader.GetOrdinal("ReadAt"))
+                            });
+                        }
+                        return receipts;
+                    }
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while retrieving the read receipts.", ex);
+            }
+        }
     }
 
-    public Task MarkAsReadAsync(int announcementId, int userId)
+    public async Task MarkAsReadAsync(int announcementId, int userId)
     {
-        throw new NotImplementedException();
+        using( SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+                string query = @"
+                    IF NOT EXISTS (SELECT 1 FROM AnnouncementReadReceipts WHERE AnnouncementId = @AnnouncementId AND UserId = @UserId)
+                    BEGIN
+                        INSERT INTO AnnouncementReadReceipts (AnnouncementId, UserId, ReadAt)
+                        VALUES (@AnnouncementId, @UserId, GETUTCDATE())
+                    END";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AnnouncementId", announcementId);
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while marking the announcement as read.", ex);
+            }
+        }
     }
 
     public async Task PinAsync(int announcementId, int eventId)
@@ -209,9 +363,35 @@ public class AnnouncementRepository : IAnnouncementRepository
         }
     }
 
-    public Task RemoveReactionAsync(int announcementId, int userId)
+    public async Task RemoveReactionAsync(int announcementId, int userId)
     {
-        throw new NotImplementedException();
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+                string query = @"
+                    DELETE FROM AnnouncementReactions 
+                    WHERE AnnouncementId = @AnnouncementId AND UserId = @UserId";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@AnnouncementId", announcementId);
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    await command.ExecuteNonQueryAsync();
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while removing the reaction.", ex);
+            }
+        }
     }
 
     public async Task UnpinAsync(int eventId)

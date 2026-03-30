@@ -38,7 +38,7 @@ namespace Events_GSS
         /// </summary>
         /// 
         public new static App Current => (App)Application.Current;
-        public IServiceProvider Services { get; }
+        public static IServiceProvider Services { get; private set; }
         public App()
         {
             InitializeComponent();
