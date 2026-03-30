@@ -11,40 +11,54 @@ namespace Events_GSS.Data.Services
     public class MemoryService : IMemoryService
     {
         private readonly IMemoryRepository _memoryRepo;
+        //IAttendedEvents ....
 
         public MemoryService(IMemoryRepository memoryRepo)
         {
             _memoryRepo = memoryRepo;
         }
 
-
-        public async Task<List<string>> GetOnlyPhotosAsync(int eventId)
+        public async Task<List<Memory>> GetByEventAsync(Event forEvent, User currentUser)
         {
-            var memories = await _memoryRepo.GetByEventAsync(eventId);
+            var memories = await _memoryRepo.GetByEventAsync(forEvent.EventId);
+
+            foreach (var memory in memories)
+            {
+                memory.LikesCount = await _memoryRepo.GetLikesCountAsync(memory.MemoryId);
+                memory.IsLikedByCurrentUser = await _memoryRepo.HasLikedAsync(memory.MemoryId, currentUser.UserId);
+            }
+
+            return memories;
+        }
+
+        public async Task<List<string>> GetOnlyPhotosAsync(Event forEvent)
+        {
+            var memories = await _memoryRepo.GetByEventAsync(forEvent.EventId);
             return memories
                 .Where(m => m.PhotoPath != null)
                 .Select(m => m.PhotoPath!)
                 .ToList();
         }
 
-        public async Task<List<Memory>> FilterByMyMemoriesAsync(int eventId, int userId)
+        public async Task<List<Memory>> FilterByMyMemoriesAsync(Event forEvent, User currentUser)
         {
-            var memories = await GetByEventAsync(eventId, userId);
-            return memories.Where(m => m.Author.UserId == userId).ToList();
+            var memories = await GetByEventAsync(forEvent, currentUser);
+            return memories.Where(m => m.Author.UserId == currentUser.UserId).ToList();
         }
 
-        public async Task<List<Memory>> OrderByDateAsync(int eventId, int currentUserId, bool ascending)
+        public async Task<List<Memory>> OrderByDateAsync(Event forEvent, User currentUser, bool ascending)
         {
-            var memories = await GetByEventAsync(eventId, currentUserId);
+            var memories = await GetByEventAsync(forEvent, currentUser);
             return ascending
                 ? memories.OrderBy(m => m.CreatedAt).ToList()
                 : memories.OrderByDescending(m => m.CreatedAt).ToList();
         }
 
-        public async Task AddAsync(int eventId, int userId, string? photoPath, string? text)
+        public async Task AddAsync(Event forEvent, User author, string? photoPath, string? text)
         {
             bool hasPhoto = !string.IsNullOrWhiteSpace(photoPath);
             bool hasText = !string.IsNullOrWhiteSpace(text);
+            //check if user is in attended events, if no exception
 
             if (!hasPhoto && !hasText)
                 throw new InvalidOperationException("A memory must have at least a photo or text.");
@@ -54,56 +68,50 @@ namespace Events_GSS.Data.Services
                 PhotoPath = hasPhoto ? photoPath : null,
                 Text = hasText ? text : null,
                 CreatedAt = DateTime.UtcNow,
-                Event = new Event { EventId = eventId },
-                Author = new User { UserId = userId }
+                Event = forEvent,
+                Author = author
             };
 
             await _memoryRepo.AddAsync(memory);
         }
 
-        public async Task DeleteAsync(int memoryId, int requestingUserId)
+        public async Task DeleteAsync(Memory memory, User requestingUser)
         {
-            var memory = await _memoryRepo.GetByIdAsync(memoryId);
+            var fullMemory = await _memoryRepo.GetByIdAsync(memory.MemoryId);
 
-            if (memory == null)
+            if (fullMemory == null)
                 throw new Exception("Memory not found.");
 
-            bool isAdmin = memory.Event.Admin.UserId == requestingUserId;
-            bool isOwner = memory.Author.UserId == requestingUserId;
+            bool isAdmin = fullMemory.Event.Admin.UserId == requestingUser.UserId;
+            bool isOwner = fullMemory.Author.UserId == requestingUser.UserId;
 
             if (!isAdmin && !isOwner)
                 throw new UnauthorizedAccessException("You can only delete your own memories.");
 
-            await _memoryRepo.DeleteAsync(memoryId);
+            await _memoryRepo.DeleteAsync(memory.MemoryId);
         }
 
-        public async Task ToggleLikeAsync(int memoryId, int userId)
+        public async Task ToggleLikeAsync(Memory memory, User currentUser)
         {
-            var memory = await _memoryRepo.GetByIdAsync(memoryId);
+            var fullMemory = await _memoryRepo.GetByIdAsync(memory.MemoryId);
 
-            if (memory == null)
+            if (fullMemory == null)
                 throw new Exception("Memory not found.");
 
-            if (memory.Author.UserId == userId)
+            if (fullMemory.Author.UserId == currentUser.UserId)
                 throw new InvalidOperationException("You cannot like your own memory.");
 
-            bool alreadyLiked = await _memoryRepo.HasLikedAsync(memoryId, userId);
+            bool alreadyLiked = await _memoryRepo.HasLikedAsync(memory.MemoryId, currentUser.UserId);
             if (alreadyLiked)
-                await _memoryRepo.RemoveLikeAsync(memoryId, userId);
+                await _memoryRepo.RemoveLikeAsync(memory.MemoryId, currentUser.UserId);
             else
-                await _memoryRepo.AddLikeAsync(memoryId, userId);
+                await _memoryRepo.AddLikeAsync(memory.MemoryId, currentUser.UserId);
         }
-        public async Task<List<Memory>> GetByEventAsync(int eventId, int currentUserId)
+        public bool IsOwnMemory(Memory memory, User currentUser)
         {
-            var memories = await _memoryRepo.GetByEventAsync(eventId);
-
-            foreach (var memory in memories)
-            {
-                memory.LikesCount = await _memoryRepo.GetLikesCountAsync(memory.MemoryId);
-                memory.IsLikedByCurrentUser = await _memoryRepo.HasLikedAsync(memory.MemoryId, currentUserId);
-            }
-
-            return memories;
+            return memory.Author.UserId == currentUser.UserId;
         }
     }
 }
+
+

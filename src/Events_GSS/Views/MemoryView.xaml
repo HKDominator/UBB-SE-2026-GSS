@@ -33,14 +33,19 @@
                     Click="AddMemoryButton_Click"/>
         </Grid>
 
-        <!-- ── Filters ── -->
+        <!-- ── Filters ── 
+        
+        -->
         <StackPanel Grid.Row="1"
                     Orientation="Horizontal"
                     Spacing="8"
                     Margin="16,0,16,8">
             <ToggleButton x:Name="MyMemoriesToggle"
-                          Content="My Memories"
-                          Click="MyMemoriesToggle_Click"/>
+Content="My Memories"
+Click="MyMemoriesToggle_Click"/>
+
+
+
             <Button Content="Date ↑"
                     Click="SortAscending_Click"/>
             <Button Content="Date ↓"
@@ -87,9 +92,9 @@
                                         <!-- Photo -->
                                         <Border CornerRadius="4" Margin="4">
                                             <Image Source="{x:Bind PhotoPath, Mode=OneWay}"
-                                                   Width="250"
-                                                   Height="200"
-                                                   Stretch="UniformToFill"/>
+                                                   Width="400"
+                                                   Height="500"
+                                                   Stretch="Uniform"/>
                                         </Border>
 
 
@@ -122,14 +127,14 @@
                                                            FontSize="14"/>
                                                 <ToggleButton Content="♥"
                                                               IsChecked="{x:Bind IsLikedByCurrentUser, Mode=OneWay}"
-                                                              Tag="{x:Bind MemoryId}"
                                                               Click="LikeButton_Click"
                                                               Padding="8,4"/>
+                                                
                                             </StackPanel>
 
                                             <Button Grid.Column="2"
                                                     Content="🗑"
-                                                    Tag="{x:Bind MemoryId}"
+                                                    Tag="{Binding}"
                                                     Click="DeleteButton_Click"
                                                     Padding="8,4"/>
                                         </Grid>
