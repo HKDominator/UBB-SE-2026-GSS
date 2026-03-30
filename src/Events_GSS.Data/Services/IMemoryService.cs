@@ -16,14 +16,7 @@ namespace Events_GSS.Data.Services {
         Task DeleteAsync(Memory memory, User user);
         Task ToggleLikeAsync(Memory memory, User user);
         public bool IsOwnMemory(Memory memory, User currentUser);
-            /*
-            Task<List<Memory>> GetByEventAsync(int eventId, int userId);
-            Task<List<string>> GetOnlyPhotosAsync(int eventId);
-            Task<List<Memory>> FilterByMyMemoriesAsync(int eventId, int userId);
-            Task<List<Memory>> OrderByDateAsync(int eventId, int currentUserId, bool ascending);
-            Task AddAsync(int eventId, int userId, string? photoPath, string? text);
-            Task DeleteAsync(int memoryId, int userId);
-            Task ToggleLikeAsync(int memoryId, int userId);*/
+            
 
         }
 

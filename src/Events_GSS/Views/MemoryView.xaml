@@ -12,14 +12,14 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <!--Header-->
+      
         <Grid Grid.Row="0" Margin="16,16,16,8">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="*"/>
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="Auto"/>
             </Grid.ColumnDefinitions>
-           
+
             <Button Grid.Column="1"
                     Content="📷 Gallery"
                     Margin="0,0,8,0"
@@ -44,10 +44,9 @@
 
 
 
-        <!--Content area -->
+      
         <Grid Grid.Row="2">
 
-            <!-- Memory List -->
             <ScrollViewer x:Name="MemoryListScrollViewer"
                           Padding="16,0,16,16">
                 <StackPanel Spacing="12">
@@ -81,21 +80,17 @@
                                         Background="{ThemeResource CardBackgroundFillColorDefaultBrush}">
                                     <StackPanel Spacing="8">
 
-                                        <!-- Photo -->
                                         <Border CornerRadius="4" Margin="4">
                                             <Image Source="{x:Bind PhotoPath, Mode=OneWay}"
-                                                   Width="400"
-                                                   Height="500"
-                                                   Stretch="Uniform"/>
+                                                   Stretch="Uniform"
+                                                   MaxHeight="250"/>
+
                                         </Border>
 
-
-                                        <!-- Text -->
                                         <TextBlock Text="{x:Bind Text, Mode=OneWay}"
                                                    TextWrapping="Wrap"
                                                    FontSize="14"/>
 
-                                        <!-- Footer -->
                                         <Grid>
                                             <Grid.ColumnDefinitions>
                                                 <ColumnDefinition Width="*"/>
@@ -121,7 +116,7 @@
                                                               IsChecked="{x:Bind IsLikedByCurrentUser, Mode=OneWay}"
                                                               Click="LikeButton_Click"
                                                               Padding="8,4"/>
-                                                
+
                                             </StackPanel>
 
                                             <Button Grid.Column="2"
@@ -140,7 +135,7 @@
                 </StackPanel>
             </ScrollViewer>
 
-            <!-- Gallery View -->
+            <!--Gallery--> 
             <Grid x:Name="GalleryGrid"
                   Padding="16,0,16,16"
                   Visibility="Collapsed">

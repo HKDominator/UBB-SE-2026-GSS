@@ -25,7 +25,7 @@ namespace Events_GSS.Views
             var factory = new SqlConnectionFactory("Server=localhost\\SQLEXPRESS;Database=EventsApp;Trusted_Connection=True;TrustServerCertificate=True;");
             var memoryRepo = new MemoryRepository(factory);
             var memoryService = new MemoryService(memoryRepo);
-           // var userService = new UserService();
+            // var userService = new UserService();
 
             ViewModel = new MemoryViewModel(memoryService);
 
@@ -55,7 +55,7 @@ namespace Events_GSS.Views
         }*/
 
         //Filter / Sort
-        
+
         private void MyMemoriesToggle_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ShowOnlyMine = MyMemoriesToggle.IsChecked == true;
@@ -63,8 +63,8 @@ namespace Events_GSS.Views
         private void SortAscending_Click(object sender, RoutedEventArgs e)
         {
             MyMemoriesToggle.IsChecked = false;
-            ViewModel.ResetOnlyMineWithoutReload(); 
-            ViewModel.SortAscendingCommand.Execute(null); 
+            ViewModel.ResetOnlyMineWithoutReload();
+            ViewModel.SortAscendingCommand.Execute(null);
         }
 
         private void SortDescending_Click(object sender, RoutedEventArgs e)
@@ -123,7 +123,7 @@ namespace Events_GSS.Views
             await ViewModel.ToggleLikeAsync(memory);
 
             if (ViewModel.HasError)
-                btn.IsChecked = memory.IsLikedByCurrentUser; 
+                btn.IsChecked = memory.IsLikedByCurrentUser;
         }
 
         // ── Like ──────────────────────────────────────────────────────
@@ -222,6 +222,6 @@ namespace Events_GSS.Views
             if (result == ContentDialogResult.Primary)
                 await ViewModel.AddMemoryAsync(photoPathBox.Text, textBox.Text);
         }
-      
+
     }
 }

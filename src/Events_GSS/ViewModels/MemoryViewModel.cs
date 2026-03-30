@@ -7,7 +7,8 @@ using CommunityToolkit.Mvvm.Input;
 
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Services;
-namespace Events_GSS.ViewModels {
+namespace Events_GSS.ViewModels
+{
 
     public class MemoryViewModel : INotifyPropertyChanged
     {
