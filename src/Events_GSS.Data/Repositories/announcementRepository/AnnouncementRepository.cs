@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 using Events_GSS.Data.Database;
 using Events_GSS.Data.Models;
-using Events_GSS.Data.Repositories.Interfaces;
 
 using Microsoft.Data.SqlClient;
 
@@ -20,6 +19,47 @@ public class AnnouncementRepository : IAnnouncementRepository
     public AnnouncementRepository(SqlConnectionFactory connectionFactory)
     {
         _connectionFactory = connectionFactory;
+    }
+    
+    public async Task<Event> GetEventById(int eventId)
+    {
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                await connection.OpenAsync();
+                string query = @"
+                    SELECT EventId, Name
+                    FROM Events
+                    WHERE EventId = @EventId";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@EventId", eventId);
+                    using (SqlDataReader reader = await command.ExecuteReaderAsync())
+                    {
+                        if (await reader.ReadAsync())
+                        {
+                            return MapEventFromReader(reader);
+                        }
+                        else
+                        {
+                            throw new Exception($"Event with ID {eventId} not found.");
+                        }
+                    }
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while retrieving the event.", ex);
+            }
+        }
     }
     public async Task<int> AddAsync(Announcement announcement)
     {
@@ -38,8 +78,8 @@ public class AnnouncementRepository : IAnnouncementRepository
                     command.Parameters.AddWithValue("@Date", announcement.Date);
                     command.Parameters.AddWithValue("@IsPinned", announcement.IsPinned);
                     command.Parameters.AddWithValue("@IsEdited", announcement.IsEdited);
-                    //command.Parameters.AddWithValue("@EventId", announcement.Event.Id);
-                    //command.Parameters.AddWithValue("@UserId", announcement.Author.Id);
+                    command.Parameters.AddWithValue("@EventId", announcement.Event.EventId);
+                    command.Parameters.AddWithValue("@UserId", announcement.Author.UserId);
                     var result = await command.ExecuteScalarAsync();
                     return Convert.ToInt32(result);
                 }
@@ -99,7 +139,7 @@ public class AnnouncementRepository : IAnnouncementRepository
         }
     }
 
-    public async Task DeleteAsync(int announcementId)
+    public async Task DeleteAsync(int announcementId, int userId)
     {
         using (SqlConnection connection = _connectionFactory.CreateConnection())
         {
@@ -108,10 +148,11 @@ public class AnnouncementRepository : IAnnouncementRepository
                 await connection.OpenAsync();
                 string query = @"
                         DELETE FROM Announcements 
-                        WHERE AnnId = @AnnId";
+                        WHERE AnnId = @AnnId AND UserId = @UserId";
                 using (SqlCommand command = new SqlCommand(query, connection))
                 {
                     command.Parameters.AddWithValue("@AnnId", announcementId);
+                    command.Parameters.AddWithValue("UserId", userId);
                     await command.ExecuteNonQueryAsync();
                 }
             }
@@ -158,27 +199,7 @@ public class AnnouncementRepository : IAnnouncementRepository
                     {
                         while (await reader.ReadAsync())
                         {
-                            var announcement = new Announcement(
-                                id: reader.GetInt32(reader.GetOrdinal("AnnId")),
-                                message: reader.GetString(reader.GetOrdinal("Message")),
-                                date: reader.GetDateTime(reader.GetOrdinal("Date")))
-                            {
-                                IsPinned = reader.GetBoolean(reader.GetOrdinal("IsPinned")),
-                                IsEdited = reader.GetBoolean(reader.GetOrdinal("IsEdited")),
-                                IsRead = reader.GetBoolean(reader.GetOrdinal("IsRead")),
-                                Event = new Event
-                                {
-                                    EventId = reader.GetInt32(reader.GetOrdinal("EventId")),
-                                    Name = reader.GetString(reader.GetOrdinal("EventName"))
-                                },
-                                Author = new User
-                                {
-                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                                    Name = reader.GetString(reader.GetOrdinal("UserName"))
-                                }
-                            };
-
-                            announcements.Add(announcement);
+                            announcements.Add(MapAnnouncementWithRelationsFromReader(reader));
                         }
                     }
                 }
@@ -220,11 +241,7 @@ public class AnnouncementRepository : IAnnouncementRepository
                         var reactions = new List<ReactionCounter>();
                         while (await reader.ReadAsync())
                         {
-                            reactions.Add(new ReactionCounter 
-                            {
-                                Emoji = reader.GetString(reader.GetOrdinal("Emoji")),
-                                Count = reader.GetInt32(reader.GetOrdinal("ReactionCount"))
-                            });
+                            reactions.Add(MapReactionCounterFromReader(reader));
 
                         }
                         return reactions;
@@ -269,15 +286,7 @@ public class AnnouncementRepository : IAnnouncementRepository
                         var receipts = new List<AnnouncementReadReceipt>();
                         while (await reader.ReadAsync())
                         {
-                            receipts.Add(new AnnouncementReadReceipt
-                            {
-                                User = new User
-                                {
-                                    UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                                    Name = reader.GetString(reader.GetOrdinal("UserName"))
-                                },
-                                ReadAt = reader.GetDateTime(reader.GetOrdinal("ReadAt"))
-                            });
+                            receipts.Add(MapReadReceiptFromReader(reader));
                         }
                         return receipts;
                     }
@@ -458,6 +467,116 @@ public class AnnouncementRepository : IAnnouncementRepository
             catch (Exception ex)
             {
                 throw new Exception("An unexpected error occurred while updating the announcement.", ex);
+            }
+        }
+    }
+
+    private static Announcement MapAnnouncementFromReader(SqlDataReader reader)
+    {
+        return new Announcement(
+            id: reader.GetInt32(reader.GetOrdinal("AnnId")),
+            message: reader.GetString(reader.GetOrdinal("Message")),
+            date: reader.GetDateTime(reader.GetOrdinal("Date")))
+        {
+            IsPinned = reader.GetBoolean(reader.GetOrdinal("IsPinned")),
+            IsEdited = reader.GetBoolean(reader.GetOrdinal("IsEdited"))
+        };
+    }
+
+    private static Announcement MapAnnouncementWithRelationsFromReader(SqlDataReader reader)
+    {
+        var announcement = MapAnnouncementFromReader(reader);
+
+        announcement.Event = MapEventFromReader(reader);
+        announcement.Author = MapUserFromReader(reader);
+
+        // Optional fields that may not always be in the query
+        var isReadOrdinal = reader.GetOrdinal("IsRead");
+        if (isReadOrdinal >= 0)
+        {
+            announcement.IsRead = reader.GetBoolean(isReadOrdinal);
+        }
+
+        return announcement;
+    }
+
+    private static Event MapEventFromReader(SqlDataReader reader)
+    {
+        return new Event
+        {
+            EventId = reader.GetInt32(reader.GetOrdinal("EventId")),
+            Name = reader.GetString(reader.GetOrdinal("EventName"))
+        };
+    }
+
+    private static User MapUserFromReader(SqlDataReader reader)
+    {
+        return new User
+        {
+            UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+            Name = reader.GetString(reader.GetOrdinal("UserName"))
+        };
+    }
+
+    private static ReactionCounter MapReactionCounterFromReader(SqlDataReader reader)
+    {
+        return new ReactionCounter
+        {
+            Emoji = reader.GetString(reader.GetOrdinal("Emoji")),
+            Count = reader.GetInt32(reader.GetOrdinal("ReactionCount"))
+        };
+    }
+
+    private static AnnouncementReadReceipt MapReadReceiptFromReader(SqlDataReader reader)
+    {
+        return new AnnouncementReadReceipt
+        {
+            User = new User
+            {
+                UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                Name = reader.GetString(reader.GetOrdinal("UserName"))
+            },
+            ReadAt = reader.GetDateTime(reader.GetOrdinal("ReadAt"))
+        };
+    }
+
+    public Task<User> GetUserById(int userId)
+    {
+        using (SqlConnection connection = _connectionFactory.CreateConnection())
+        {
+            try
+            {
+                connection.Open();
+                string query = @"
+                    SELECT UserId, Name
+                    FROM Users
+                    WHERE UserId = @UserId";
+                using (SqlCommand command = new SqlCommand(query, connection))
+                {
+                    command.Parameters.AddWithValue("@UserId", userId);
+                    using (SqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return Task.FromResult(MapUserFromReader(reader));
+                        }
+                        else
+                        {
+                            return null;
+                        }
+                    }
+                }
+            }
+            catch (SqlException se)
+            {
+                // Log the exception (you can use a logging framework like Serilog, NLog, etc.)
+                Console.Error.WriteLine($"SQL Exception: {se.Message}");
+                // Optionally, rethrow the exception or handle it as needed
+                throw;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("An unexpected error occurred while retrieving the user.", ex);
             }
         }
     }

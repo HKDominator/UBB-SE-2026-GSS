@@ -19,6 +19,9 @@ using Windows.Foundation.Collections;
 
 using Microsoft.Extensions.DependencyInjection;
 using Events_GSS.Data.Database;
+using Events_GSS.Data.Repositories;
+using Events_GSS.Data.Services;
+using Events_GSS.Data.Services.Interfaces;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -50,6 +53,9 @@ namespace Events_GSS
             var services = new ServiceCollection();
             string connectionString = configuration.GetConnectionString("DefaultConnection");
             services.AddSingleton(new SqlConnectionFactory(connectionString));
+
+            services.AddTransient<IQuestRepository,QuestRepository>();
+            services.AddTransient<IQuestService,QuestService>();
 
             Services = services.BuildServiceProvider();
         }

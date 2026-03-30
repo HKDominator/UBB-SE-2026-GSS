@@ -1,26 +1,61 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 using Events_GSS.Data.Models;
+using Events_GSS.Data.Repositories;
+using Events_GSS.Data.Repositories.announcementRepository; 
+using Events_GSS.Data.Repositories.eventRepository;
+
 
 namespace Events_GSS.Data.Services.announcementServices;
 
 public class AnnouncementService : IAnnouncementService
 {
-    public Task CreateAnnouncementAsync(string message, int eventId, int userId)
+    private readonly IAnnouncementRepository _announcementRepository;
+    private readonly IEventRepository _eventRepository;
+
+    public AnnouncementService(IAnnouncementRepository announcementRepository)
     {
-        throw new NotImplementedException();
+        _announcementRepository = announcementRepository;
     }
 
-    public Task DeleteAnnouncementAsync(int annId, int userId)
+    public async Task CreateAnnouncementAsync(string message, int eventId, int userId)
     {
-        throw new NotImplementedException();
+        var eventEntity = await _announcementRepository.GetEventById(eventId);
+        var userEntity = await _announcementRepository.GetUserById(userId);
+        if( eventEntity == null)
+        {
+            throw new ArgumentException($"Event with ID {eventId} does not exist.");
+        }
+        if( userEntity == null)
+        {
+            throw new ArgumentException($"User with ID {userId} does not exist.");
+        }
+
+        var announcement = new Announcement(
+            id: 0, // Id will be set by the database
+            message: message,
+            date: DateTime.UtcNow)
+        {
+            IsPinned = false,
+            IsEdited = false,
+            Event = eventEntity,
+            Author = userEntity
+        };
+        await _announcementRepository.AddAsync(announcement);
+
     }
 
-    public Task<List<Announcement>> GetAnnouncementsAsync(int eventId, int userId)
+    public async Task DeleteAnnouncementAsync(int annId, int userId)
+    { //TO DO : check if user is author or event admin, check if the event is existing
+        await _announcementRepository.DeleteAsync(annId, userId);
+    }
+
+    public async Task<List<Announcement>> GetAnnouncementsAsync(int eventId, int userId)
     {
-        throw new NotImplementedException();
+        return await _announcementRepository.GetByEventAsync(eventId, userId);
     }
 
     public Task<List<AnnouncementReadReceipt>> GetReadReceiptsAsync(int annId, int userId)
@@ -33,9 +68,10 @@ public class AnnouncementService : IAnnouncementService
         throw new NotImplementedException();
     }
 
-    public Task PinAnnouncementAsync(int annId, int eventId, int userId)
+    public async Task PinAnnouncementAsync(int annId, int eventId, int userId)
     {
-        throw new NotImplementedException();
+        await _announcementRepository.UnpinAsync(eventId);
+        await _announcementRepository.PinAsync(annId, eventId);
     }
 
     public Task ReactAsync(int annId, int userId, string emoji)
@@ -48,8 +84,16 @@ public class AnnouncementService : IAnnouncementService
         throw new NotImplementedException();
     }
 
-    public Task UpdateAnnouncementAsync(int announcementId, string newMessage, int userId)
+    public async Task UpdateAnnouncementAsync(int announcementId, string newMessage, int userId)
     {
-        throw new NotImplementedException();
+        if(string.IsNullOrEmpty(newMessage))
+        {
+            throw new ArgumentException("Message cannot be null or empty.", nameof(newMessage));
+        }
+        var newAnn = new Announcement(announcementId, newMessage, DateTime.UtcNow)
+        {
+            IsEdited = true
+        };
+        await _announcementRepository.UpdateAsync(newAnn);
     }
 }

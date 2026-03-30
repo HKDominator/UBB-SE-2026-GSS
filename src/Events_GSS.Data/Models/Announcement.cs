@@ -27,7 +27,7 @@ namespace Events_GSS.Data.Models
         }
 
         public int Id { get; set; }
-        public string Message { get; set; } = "";
+        public string Message { get; set; } = string.Empty;
         public DateTime Date { get; set; }
 
         public bool IsPinned { get; set; } = false;
@@ -40,7 +40,7 @@ namespace Events_GSS.Data.Models
 
         public Event Event { get; set; }
 
-        public User Author { get; set; }
+        public User? Author { get; set; }
 
     }
 }
