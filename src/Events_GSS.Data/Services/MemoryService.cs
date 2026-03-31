@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
+using Events_GSS.Data.Services.Interfaces;
 
 namespace Events_GSS.Data.Services
 {

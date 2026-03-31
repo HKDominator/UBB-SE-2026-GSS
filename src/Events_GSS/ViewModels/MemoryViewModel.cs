@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 
 using Events_GSS.Data.Models;
-using Events_GSS.Data.Services;
+using Events_GSS.Data.Services.Interfaces;
 
 namespace Events_GSS.ViewModels
 {

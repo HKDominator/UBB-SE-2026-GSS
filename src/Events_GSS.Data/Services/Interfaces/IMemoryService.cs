@@ -1,9 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using Events_GSS.Data.Models;
 
-using Events_GSS.Data.Models;
-
-namespace Events_GSS.Data.Services {
+namespace Events_GSS.Data.Services.Interfaces {
 
     public interface IMemoryService
     {
