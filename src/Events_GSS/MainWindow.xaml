@@ -14,7 +14,7 @@
     </Window.SystemBackdrop>
 
     <Grid>
-        <views:QuestAdminControl
-            ViewModel="{x:Bind QuestViewModel}" />
+        <views:DiscussionControl
+            ViewModel="{x:Bind DiscussionViewModel}" />
     </Grid>
 </Window>

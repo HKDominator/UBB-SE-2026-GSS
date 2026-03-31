@@ -23,6 +23,8 @@ using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Services;
 using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Data.Repositories.announcementRepository;
+using Events_GSS.Data.Services.discussionService;
+using Events_GSS.Data.Repositories.eventRepository;
 using Events_GSS.Data.Services.announcementServices;
 
 // To learn more about WinUI, the WinUI project structure,
@@ -36,6 +38,7 @@ namespace Events_GSS
     public partial class App : Application
     {
         private Window? _window;
+        public Window? MainWindow => _window;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -60,6 +63,9 @@ namespace Events_GSS
             services.AddTransient<IQuestService,QuestService>();
             services.AddTransient<IAnnouncementRepository, AnnouncementRepository>();
             services.AddTransient<IAnnouncementService, AnnouncementService>();
+            services.AddTransient<IEventRepository, EventRepository>();
+            services.AddTransient<IDiscussionRepository, DiscussionRepository>();
+            services.AddTransient<IDiscussionService, DiscussionService>();
 
             Services = services.BuildServiceProvider();
         }

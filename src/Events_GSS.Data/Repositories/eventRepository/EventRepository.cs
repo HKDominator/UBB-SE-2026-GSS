@@ -22,11 +22,11 @@ public class EventRepository: IEventRepository
 
         var command = new SqlCommand(@"
             SELECT E.*, C.CategoryId as CatId, C.Title as CategoryTitle,
-                u.UserId as UserId, u.Name as UserName,
+                u.Id as UserId, u.Name as UserName,
                 (SELECT COUNT(*) FROM AttendedEvents AE WHERE AE.EventId = E.EventId) AS EnrolledCount
             FROM Events E
             LEFT JOIN Categories C ON E.CategoryId = C.CategoryId
-            LEFT JOIN Users u ON E.AdminId = u.UserId
+            LEFT JOIN Users u ON E.AdminId = u.Id
             WHERE E.IsPublic = 1 AND E.EndDateTime > GETUTCDATE()
             ORDER BY E.StartDateTime ASC", connection);
         
@@ -46,7 +46,7 @@ public class EventRepository: IEventRepository
 
         var cmd = new SqlCommand(@"
             SELECT e.*, c.CategoryId as CatId, c.Title as CategoryTitle,
-                u.UserId as UserId, u.Name as UserName,
+                u.Id as UserId, u.Name as UserName,
                 (SELECT COUNT(*) FROM AttendedEvents ae WHERE ae.EventId = e.EventId) AS EnrolledCount
             FROM Events e
             LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
