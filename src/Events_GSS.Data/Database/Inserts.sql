@@ -60,7 +60,7 @@ SET IDENTITY_INSERT Events OFF;
 
 -- Toti trei joined la event
 INSERT INTO AttendedEvents (EventId, UserId)
-VALUES (1, 1), (1, 2), (1, 3);
+VALUES (1, 1), (1, 2), (1, 3), (2, 1), (2, 2), (3, 1), (3, 3);
 
 -- Memories
 -- Memory cu doar text (de la Bob)
