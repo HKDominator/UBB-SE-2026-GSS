@@ -57,6 +57,9 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\NavigationBar.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\QuestAdminControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

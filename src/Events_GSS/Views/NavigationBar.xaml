@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="Events_GSS.Views.NavigationBar"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:Events_GSS.Views"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Border Background="{ThemeResource NavigationViewDefaultPaneBackground}" Padding="16,0">
+        <Grid Height="56">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- App Name -->
+            <TextBlock
+                Grid.Column="0"
+                Text="GSS Events"
+                FontSize="20"
+                FontWeight="Bold"
+                VerticalAlignment="Center"/>
+
+            <!-- Nav Buttons -->
+            <StackPanel
+                Grid.Column="1"
+                Orientation="Horizontal"
+                HorizontalAlignment="Center"
+                Spacing="8">
+                <Button
+                    Content="All Events"
+                    Command="{x:Bind ViewModel.NavigateToAllEventsCommand}"/>
+                <Button
+                    Content="My Events"
+                    Command="{x:Bind ViewModel.NavigateToMyEventsCommand}"/>
+            </StackPanel>
+
+        </Grid>
+    </Border>
+</UserControl>
