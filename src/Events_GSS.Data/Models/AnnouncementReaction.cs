@@ -9,14 +9,6 @@ public class AnnouncementReaction
 {
     public int Id { get; set; } = 0;
     public required string Emoji { get; set; }
-    public Announcement Announcement { get; set; } 
-
-    public AnnouncementReaction(int id, string emoji, Announcement announcement)
-    {
-        Id = id;
-        Emoji = emoji;
-        Announcement = announcement;
-    }
-
-    public User Author {  get; set; }
+    public int AnnouncementId { get; set; } 
+    public required User Author {  get; set; }
 }
