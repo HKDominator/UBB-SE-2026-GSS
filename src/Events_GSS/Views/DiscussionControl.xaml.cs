@@ -78,7 +78,6 @@ public sealed partial class DiscussionControl : UserControl
             || ViewModel is null)
             return;
 
-        // Confirmation dialog (REQ-DIS-03)
         var dialog = new ContentDialog
         {
             Title = "Delete message",
@@ -108,11 +107,6 @@ public sealed partial class DiscussionControl : UserControl
         picker.FileTypeFilter.Add(".mp4");
         picker.FileTypeFilter.Add(".mov");
 
-        // WinUI 3 desktop requires initialising the picker with
-        // the window handle. You need to expose the Window from App:
-        //   public Window? MainWindow => _window;
-        // If you use a different approach to get the HWND, replace
-        // the two lines below accordingly.
         var hwnd = WinRT.Interop.WindowNative.GetWindowHandle(
             ((App)Application.Current).MainWindow);
         WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
@@ -144,7 +138,6 @@ public sealed partial class DiscussionControl : UserControl
 
     private void OnMessageInputKeyDown(object sender, KeyRoutedEventArgs e)
     {
-        // Enter sends the message
         if (e.Key == Windows.System.VirtualKey.Enter
             && ViewModel is not null
             && ViewModel.SendMessageCommand.CanExecute(null))

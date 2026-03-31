@@ -50,7 +50,7 @@ public class EventRepository: IEventRepository
                 (SELECT COUNT(*) FROM AttendedEvents ae WHERE ae.EventId = e.EventId) AS EnrolledCount
             FROM Events e
             LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
-            LEFT JOIN Users u ON e.AdminId = u.UserId
+            LEFT JOIN Users u ON e.AdminId = u.Id
             WHERE e.EventId = @EventId", conn);
 
         cmd.Parameters.AddWithValue("@EventId", eventId);
@@ -141,7 +141,7 @@ public class EventRepository: IEventRepository
         MaximumPeople = reader.IsDBNull("MaximumPeople") ? null : reader.GetInt32("MaximumPeople"),
         EventBannerPath = reader.IsDBNull("EventBannerPath") ? null : reader.GetString("EventBannerPath"),
 
-        Category=reader.IsDBNull("Category") ? null : new Category
+        Category=reader.IsDBNull("CatId") ? null : new Category
         {
             CategoryId = (int)reader["CategoryId"],
             Title = (string)reader["CategoryTitle"]

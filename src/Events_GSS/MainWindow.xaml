@@ -15,6 +15,7 @@
 
     <Grid>
         <views:DiscussionControl
-            ViewModel="{x:Bind DiscussionViewModel}" />
+            ViewModel = "{x:Bind DiscussionViewModel}" />
+
     </Grid>
 </Window>

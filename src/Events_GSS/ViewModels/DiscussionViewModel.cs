@@ -264,6 +264,9 @@ public partial class DiscussionViewModel : ObservableObject
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine("========== FULL EXCEPTION ==========");
+            System.Diagnostics.Debug.WriteLine(ex.ToString());
+            System.Diagnostics.Debug.WriteLine("=====================================");
             ErrorMessage = ex.Message;
         }
         finally

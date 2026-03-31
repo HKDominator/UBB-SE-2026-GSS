@@ -23,18 +23,16 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
 
-        //IQuestService qs=App.Services.GetRequiredService<IQuestService>();
         var services = App.Services.GetRequiredService<IDiscussionService>();
-
+        IQuestService qs = App.Services.GetRequiredService<IQuestService>();
 
         // TODO: PlaceHolder for event data, replace when navigation is implemented
         var currentEvent = new Event { EventId = 1 };
         var currentUserId = 1; // Placeholder for current user ID, replace with actual user context
         bool isAdmin = true; // Placeholder for admin check, replace with actual logic
 
-        //QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
         DiscussionViewModel = new DiscussionViewModel(currentEvent, services, currentUserId, isAdmin);
-
+        QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
         _ = DiscussionViewModel.InitializeAsync();
     }
 }
