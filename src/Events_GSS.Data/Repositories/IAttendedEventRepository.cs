@@ -13,7 +13,8 @@ namespace Events_GSS.Data.Repositories
         Task DeleteAsync(int eventId, int userId);
         Task UpdateIsArchivedAsync(int eventId, int userId, bool isArchived);
         Task UpdateIsFavouriteAsync(int eventId, int userId, bool isFavourite);
-        Task<AttendedEvent> GetAsync(int eventId, int userId);
+        Task<AttendedEvent?> GetAsync(int eventId, int userId);
         Task<List<AttendedEvent>> GetByUserIdAsync(int userId);
+        Task<List<AttendedEvent>> GetCommonEventsAsync(int userId, int friendId);
     }
 }
