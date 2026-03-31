@@ -66,7 +66,8 @@ namespace Events_GSS
             services.AddTransient<IEventRepository, EventRepository>();
             services.AddTransient<IDiscussionRepository, DiscussionRepository>();
             services.AddTransient<IDiscussionService, DiscussionService>();
-
+            services.AddTransient<IMemoryRepository,MemoryRepository>();
+            services.AddTransient<IMemoryService,MemoryService>();
             Services = services.BuildServiceProvider();
         }
 
