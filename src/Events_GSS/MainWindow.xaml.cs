@@ -33,15 +33,14 @@ public sealed partial class MainWindow : Window
         bool isAdmin = true; // Placeholder for admin check, replace with actual logic
         var currentUser = new User { UserId = 1 };
         var currentUser2 = new User { UserId = 2 };
-        var currentEvent = new Event { EventId = 1, Admin = currentUser };
 
         DiscussionViewModel = new DiscussionViewModel(currentEvent, services, currentUserId, isAdmin);
         QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
         MemoriesViewModel = new MemoryViewModel(memoryService);
-        this.Activated += async (s, e) =>
-        {
-            await MemoriesView.LoadAsync(currentEvent, currentUser);
-        };
+        //this.Activated += async (s, e) =>
+        //{
+        //    await MemoriesView.LoadAsync(currentEvent, currentUser);
+        //};
         _ = DiscussionViewModel.InitializeAsync();
     }
 }

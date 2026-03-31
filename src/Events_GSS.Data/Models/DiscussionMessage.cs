@@ -9,6 +9,7 @@ public class DiscussionMessage
         Id = id;
         Message = message;
         Date = date;
+        Reactions = new List<DiscussionReaction>();
     }
 
     public int Id { get; set; }
@@ -21,6 +22,8 @@ public class DiscussionMessage
     public Event? Event { get; set; }
     public User? Author { get; set; }
     public DiscussionMessage? ReplyTo { get; set; }
+
+    public List<DiscussionReaction> Reactions { get; set; }
 
     // Non-persisted, computed at the service
     public bool CanDelete { get; set; }

@@ -66,32 +66,52 @@ public sealed partial class DiscussionControl : UserControl
         var item = FindAncestorDataContext<DiscussionMessageItemViewModel>(btn);
         if (item is not null)
         {
-            ViewModel.AddReactionCommand.Execute(
+            ViewModel.ToggleReactionCommand.Execute(
                 new DiscussionReactionPayload(item, emoji));
         }
     }
 
-    private async void OnDeleteClicked(object sender, RoutedEventArgs e)
+    private async void OnMuteClicked(object sender, RoutedEventArgs e)
     {
         if (sender is not FrameworkElement fe
             || fe.Tag is not DiscussionMessageItemViewModel item
-            || ViewModel is null)
+            || ViewModel is null
+            || !ViewModel.IsEventAdmin)
             return;
+
+        // Don't allow muting yourself
+        if (item.Author?.UserId == 0) return; // shouldn't happen but guard
+
+        var combo = new ComboBox
+        {
+            PlaceholderText = "Select duration",
+            HorizontalAlignment = HorizontalAlignment.Stretch,
+            ItemsSource = new[] { "1 hour", "24 hours", "Permanent" }
+        };
 
         var dialog = new ContentDialog
         {
-            Title = "Delete message",
-            Content = "Are you sure you want to delete this message? This cannot be undone.",
-            PrimaryButtonText = "Delete",
+            Title = $"Mute {item.Author?.Name ?? "user"}",
+            Content = combo,
+            PrimaryButtonText = "Mute",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Close,
             XamlRoot = this.XamlRoot
         };
 
         var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
+        if (result == ContentDialogResult.Primary && combo.SelectedItem is string selected)
         {
-            ViewModel.DeleteMessageCommand.Execute(item);
+            DateTime? until = selected switch
+            {
+                "1 hour" => DateTime.UtcNow.AddHours(1),
+                "24 hours" => DateTime.UtcNow.AddHours(24),
+                "Permanent" => null,
+                _ => DateTime.UtcNow.AddHours(1)
+            };
+
+            ViewModel.MuteUserCommand.Execute(
+                new MutePayload(item.Author!.UserId, until));
         }
     }
 
@@ -128,6 +148,29 @@ public sealed partial class DiscussionControl : UserControl
         }
     }
 
+    private async void OnDeleteClicked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement fe
+            || fe.Tag is not DiscussionMessageItemViewModel item
+            || ViewModel is null)
+            return;
+
+        var dialog = new ContentDialog
+        {
+            Title = "Delete message",
+            Content = "Are you sure you want to delete this message? This cannot be undone.",
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            ViewModel.DeleteMessageCommand.Execute(item);
+        }
+    }
     private void OnClearMediaClicked(object sender, RoutedEventArgs e)
     {
         if (ViewModel is not null)

@@ -3,6 +3,7 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:vm="using:Events_GSS.ViewModels"
+    xmlns:models="using:Events_GSS.Data.Models"
     xmlns:conv="using:Events_GSS.Converters">
 
     <UserControl.Resources>
@@ -62,6 +63,7 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <!-- ── Reply Reference ─────────────────────── -->
@@ -74,7 +76,6 @@
                             Margin="0,0,0,6"
                             BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
                             BorderThickness="2,0,0,0">
-
                             <StackPanel>
                                 <TextBlock
                                     Text="{x:Bind ReplyTo.Author.Name, Mode=OneWay, FallbackValue=''}"
@@ -99,7 +100,6 @@
                             Padding="8,4"
                             Margin="0,0,0,6"
                             Opacity="0.6">
-
                             <TextBlock
                                 Text="↩ Original message was deleted"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
@@ -113,17 +113,14 @@
                             Orientation="Horizontal"
                             Spacing="8"
                             Margin="0,0,0,4">
-
                             <TextBlock
                                 Text="{x:Bind Author.Name, FallbackValue='Unknown'}"
                                 Style="{ThemeResource BodyStrongTextBlockStyle}" />
-
                             <TextBlock
                                 Text="{x:Bind Date}"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
                                 Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                                 VerticalAlignment="Center" />
-
                             <Border
                                 Visibility="{x:Bind IsEdited, Converter={StaticResource BoolToVisibility}}"
                                 Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}"
@@ -161,9 +158,37 @@
                                 Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
                         </StackPanel>
 
+                        <!-- ── Reaction Display ────────────────────── -->
+                        <ItemsRepeater
+                            Grid.Row="4"
+                            ItemsSource="{x:Bind ReactionGroups, Mode=OneWay}"
+                            Margin="0,0,0,4"
+                            Visibility="{x:Bind HasReactions, Converter={StaticResource BoolToVisibility}}">
+                            <ItemsRepeater.Layout>
+                                <StackLayout Orientation="Horizontal" Spacing="4" />
+                            </ItemsRepeater.Layout>
+                            <ItemsRepeater.ItemTemplate>
+                                <DataTemplate x:DataType="models:ReactionGroup">
+                                    <Border
+                                        Padding="6,2"
+                                        CornerRadius="10"
+                                        BorderThickness="1"
+                                        BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
+                                        Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
+                                        <StackPanel Orientation="Horizontal" Spacing="4">
+                                            <TextBlock Text="{x:Bind Emoji}" FontSize="14" />
+                                            <TextBlock Text="{x:Bind Count}" FontSize="12"
+                                                       Style="{ThemeResource CaptionTextBlockStyle}"
+                                                       VerticalAlignment="Center" />
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsRepeater.ItemTemplate>
+                        </ItemsRepeater>
+
                         <!-- ── Actions Row ─────────────────────────── -->
                         <StackPanel
-                            Grid.Row="4"
+                            Grid.Row="5"
                             Orientation="Horizontal"
                             Spacing="4">
 
@@ -203,6 +228,18 @@
                                 Tag="{x:Bind}"
                                 Visibility="{x:Bind CanDelete, Converter={StaticResource BoolToVisibility}}"
                                 Click="OnDeleteClicked" />
+
+                            <!-- Admin: Mute user button (only on other users' messages) -->
+                            <Button
+                                FontSize="12"
+                                Padding="6,2"
+                                Tag="{x:Bind}"
+                                Click="OnMuteClicked">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon Glyph="&#xE74D;" FontSize="12" />
+                                    <TextBlock Text="Mute" />
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
@@ -225,14 +262,12 @@
              ═══════════════════════════════════════════════════════ -->
         <StackPanel Grid.Row="2" Spacing="0">
 
-            <!-- Reply preview -->
             <Border
                 Visibility="{x:Bind ViewModel.IsInReplyMode, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                 Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}"
                 Padding="12,8"
                 BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
                 BorderThickness="0,1,0,0">
-
                 <Grid ColumnDefinitions="*,Auto">
                     <StackPanel Grid.Column="0">
                         <TextBlock
@@ -258,7 +293,6 @@
                 </Grid>
             </Border>
 
-            <!-- Mute banner -->
             <Border
                 Visibility="{x:Bind ViewModel.IsMuted, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                 Background="{ThemeResource SystemFillColorCautionBackgroundBrush}"
@@ -272,7 +306,6 @@
                 </StackPanel>
             </Border>
 
-            <!-- Media attachment preview -->
             <Border
                 Visibility="{x:Bind ViewModel.MediaPath, Mode=OneWay, Converter={StaticResource NullToCollapsed}}"
                 Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}"
@@ -320,7 +353,7 @@
                 Grid.Column="1"
                 x:Name="MessageInput"
                 Text="{x:Bind ViewModel.NewMessage, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                PlaceholderText="Type a message..."
+                PlaceholderText="Type a message... (use @Name to mention)"
                 AcceptsReturn="False"
                 IsEnabled="{x:Bind ViewModel.IsNotLoading, Mode=OneWay}"
                 KeyDown="OnMessageInputKeyDown"

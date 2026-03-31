@@ -10,7 +10,8 @@ namespace Events_GSS.Data.Repositories;
 public interface IDiscussionRepository
 {
     // ── Messages ──────────────────────────────────────────────
-    Task<List<DiscussionMessage>> GetByEventAsync(int eventId);
+    Task<List<DiscussionMessage>> GetByEventAsync(int eventId, int currentUserId);
+    Task<DiscussionMessage?> GetByIdAsync(int messageId);
     Task<int> AddAsync(DiscussionMessage message);
     Task DeleteAsync(int messageId);
     Task<DateTime?> GetLastUserMessageDateAsync(int eventId, int userId);

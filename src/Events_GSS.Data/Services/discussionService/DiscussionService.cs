@@ -29,7 +29,7 @@ public class DiscussionService : IDiscussionService
     {
         var ev = await GetEventOrThrowAsync(eventId);
 
-        var messages = await _repo.GetByEventAsync(eventId);
+        var messages = await _repo.GetByEventAsync(eventId, userId);
 
         bool isAdmin = ev.Admin?.UserId == userId;
         foreach (var m in messages)
@@ -113,11 +113,13 @@ public class DiscussionService : IDiscussionService
         var ev = await GetEventOrThrowAsync(eventId);
         bool isAdmin = ev.Admin?.UserId == userId;
 
-        if (!isAdmin)
-        {
-            // In production, verify the message belongs to userId before deleting.
-            // Keeping it straightforward to match the existing codebase style.
-        }
+        var message = await _repo.GetByIdAsync(messageId);
+        if (message is null)
+            throw new KeyNotFoundException($"Message with ID {messageId} does not exist.");
+
+        // Only the author or admin can delete
+        if (message.Author?.UserId != userId && !isAdmin)
+            throw new UnauthorizedAccessException("You can only delete your own messages.");
 
         await _repo.DeleteAsync(messageId);
     }

@@ -20,15 +20,15 @@ public class DiscussionRepository : IDiscussionRepository
 
     // ── Messages ──────────────────────────────────────────────────────────────
 
-    public async Task<List<DiscussionMessage>> GetByEventAsync(int eventId)
+    public async Task<List<DiscussionMessage>> GetByEventAsync(int eventId, int currentUserId)
     {
         var messages = new List<DiscussionMessage>();
 
-        using (SqlConnection conn = _connectionFactory.CreateConnection())
-        {
-            await conn.OpenAsync();
+        using var conn = _connectionFactory.CreateConnection();
+        await conn.OpenAsync();
 
-            const string query = @"
+        // 1. Load messages with reply references
+        const string msgQuery = @"
             SELECT
                 d.DiscussionId,  d.Message,  d.MediaPath,
                 d.Date,          d.IsEdited,
@@ -45,55 +45,105 @@ public class DiscussionRepository : IDiscussionRepository
             WHERE d.EventId = @EventId
             ORDER BY d.Date ASC";
 
-            using (SqlCommand cmd = new SqlCommand(query, conn))
+        using (var cmd = new SqlCommand(msgQuery, conn))
+        {
+            cmd.Parameters.AddWithValue("@EventId", eventId);
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
             {
-                cmd.Parameters.AddWithValue("@EventId", eventId);
-
-                using (SqlDataReader reader = await cmd.ExecuteReaderAsync())
+                var msg = new DiscussionMessage(
+                    id: reader.GetInt32(reader.GetOrdinal("DiscussionId")),
+                    message: reader.IsDBNull(reader.GetOrdinal("Message"))
+                        ? null
+                        : reader.GetString(reader.GetOrdinal("Message")),
+                    date: reader.GetDateTime(reader.GetOrdinal("Date")))
                 {
-                    while (await reader.ReadAsync())
+                    MediaPath = reader.IsDBNull(reader.GetOrdinal("MediaPath"))
+                        ? null
+                        : reader.GetString(reader.GetOrdinal("MediaPath")),
+                    IsEdited = reader.GetBoolean(reader.GetOrdinal("IsEdited")),
+                    Author = new User
                     {
-                        var msg = new DiscussionMessage(
-                            id: reader.GetInt32(reader.GetOrdinal("DiscussionId")),
-                            message: reader.IsDBNull(reader.GetOrdinal("Message"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("Message")),
-                            date: reader.GetDateTime(reader.GetOrdinal("Date")))
-                        {
-                            MediaPath = reader.IsDBNull(reader.GetOrdinal("MediaPath"))
-                                ? null
-                                : reader.GetString(reader.GetOrdinal("MediaPath")),
-                            IsEdited = reader.GetBoolean(reader.GetOrdinal("IsEdited")),
-                            Author = new User
-                            {
-                                UserId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
-                                Name = reader.GetString(reader.GetOrdinal("AuthorName"))
-                            }
-                        };
-
-                        if (!reader.IsDBNull(reader.GetOrdinal("ReplyId")))
-                        {
-                            msg.ReplyTo = new DiscussionMessage(
-                                id: reader.GetInt32(reader.GetOrdinal("ReplyId")),
-                                message: reader.IsDBNull(reader.GetOrdinal("ReplyMessage"))
-                                    ? null
-                                    : reader.GetString(reader.GetOrdinal("ReplyMessage")),
-                                date: DateTime.MinValue) // date not needed for the preview
-                            {
-                                Author = new User
-                                {
-                                    UserId = reader.GetInt32(reader.GetOrdinal("ReplyAuthorId")),
-                                    Name = reader.GetString(reader.GetOrdinal("ReplyAuthorName"))
-                                }
-                            };
-                        }
-
-                        messages.Add(msg);
+                        UserId = reader.GetInt32(reader.GetOrdinal("AuthorId")),
+                        Name = reader.GetString(reader.GetOrdinal("AuthorName"))
                     }
+                };
+
+                if (!reader.IsDBNull(reader.GetOrdinal("ReplyId")))
+                {
+                    msg.ReplyTo = new DiscussionMessage(
+                        id: reader.GetInt32(reader.GetOrdinal("ReplyId")),
+                        message: reader.IsDBNull(reader.GetOrdinal("ReplyMessage"))
+                            ? null
+                            : reader.GetString(reader.GetOrdinal("ReplyMessage")),
+                        date: DateTime.MinValue)
+                    {
+                        Author = new User
+                        {
+                            UserId = reader.GetInt32(reader.GetOrdinal("ReplyAuthorId")),
+                            Name = reader.GetString(reader.GetOrdinal("ReplyAuthorName"))
+                        }
+                    };
                 }
+
+                messages.Add(msg);
             }
-            return messages;
         }
+
+        if (messages.Count == 0) return messages;
+
+        // 2. Batch-load all reactions for this event's messages in one query
+        var messageIds = messages.Select(m => m.Id).ToList();
+        var idParams = string.Join(",", messageIds.Select((_, i) => $"@mid{i}"));
+
+        var rxnQuery = $@"
+            SELECT dr.Id, dr.MessageId, dr.Emoji, dr.UserId, u.Name AS UserName
+            FROM DiscussionReactions dr
+            INNER JOIN Users u ON dr.UserId = u.Id
+            WHERE dr.MessageId IN ({idParams})";
+
+        var allReactions = new List<(int MessageId, DiscussionReaction Reaction)>();
+
+        using (var cmd = new SqlCommand(rxnQuery, conn))
+        {
+            for (int i = 0; i < messageIds.Count; i++)
+            {
+                cmd.Parameters.AddWithValue($"@mid{i}", messageIds[i]);
+            }
+
+            using var reader = await cmd.ExecuteReaderAsync();
+            while (await reader.ReadAsync())
+            {
+                var messageId = reader.GetInt32(reader.GetOrdinal("MessageId"));
+                var reaction = new DiscussionReaction
+                {
+                    Id = reader.GetInt32(reader.GetOrdinal("Id")),
+                    Emoji = reader.GetString(reader.GetOrdinal("Emoji")),
+                    Message = new DiscussionMessage(messageId, null, DateTime.MinValue),
+                    Author = new User
+                    {
+                        UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                        Name = reader.GetString(reader.GetOrdinal("UserName"))
+                    }
+                };
+                allReactions.Add((messageId, reaction));
+            }
+        }
+        // 3. Attach reactions to their messages
+        var reactionsByMessage = allReactions
+            .GroupBy(r => r.MessageId)
+            .ToDictionary(g => g.Key, g => g.Select(x => x.Reaction).ToList());
+
+        foreach (var msg in messages)
+        {
+            if (reactionsByMessage.TryGetValue(msg.Id, out var reactions))
+            {
+                msg.Reactions = reactions;
+            }
+        }
+
+        return messages;
     }
 
     public async Task<int> AddAsync(DiscussionMessage message)
@@ -325,5 +375,38 @@ public class DiscussionRepository : IDiscussionRepository
         cmd.Parameters.AddWithValue("@EventId", eventId);
         cmd.Parameters.AddWithValue("@UserId", userId);
         await cmd.ExecuteNonQueryAsync();
+    }
+
+    public async Task<DiscussionMessage?> GetByIdAsync(int messageId)
+    {
+        using var conn = _connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+
+        const string query = @"
+            SELECT d.DiscussionId, d.Message, d.Date, d.UserId,
+                   u.Name AS AuthorName
+            FROM Discussions d
+            INNER JOIN Users u ON d.UserId = u.Id
+            WHERE d.DiscussionId = @Id";
+
+        using var cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@Id", messageId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync()) return null;
+
+        return new DiscussionMessage(
+            id: reader.GetInt32(reader.GetOrdinal("DiscussionId")),
+            message: reader.IsDBNull(reader.GetOrdinal("Message"))
+                ? null
+                : reader.GetString(reader.GetOrdinal("Message")),
+            date: reader.GetDateTime(reader.GetOrdinal("Date")))
+        {
+            Author = new User
+            {
+                UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                Name = reader.GetString(reader.GetOrdinal("AuthorName"))
+            }
+        };
     }
 }

@@ -103,7 +103,7 @@ public partial class DiscussionViewModel : ObservableObject
         Messages.Clear();
         foreach (var m in list)
         {
-            Messages.Add(new DiscussionMessageItemViewModel(m));
+            Messages.Add(new DiscussionMessageItemViewModel(m, _currentUserId));
         }
     }
 
@@ -195,27 +195,25 @@ public partial class DiscussionViewModel : ObservableObject
     // ── Reactions ────────────────────────────────────────────────────────────
 
     [RelayCommand]
-    private async Task AddReactionAsync(DiscussionReactionPayload? payload)
+    private async Task ToggleReactionAsync(DiscussionReactionPayload? payload)
     {
         if (payload is null) return;
 
         await RunGuardedAsync(async () =>
         {
-            await _service.ReactAsync(
-                payload.Message.Id, _currentUserId, payload.Emoji);
+            var currentEmoji = payload.Message.CurrentUserEmoji;
 
-            await LoadMessagesAsync();
-        });
-    }
-
-    [RelayCommand]
-    private async Task RemoveReactionAsync(DiscussionMessageItemViewModel? item)
-    {
-        if (item is null) return;
-
-        await RunGuardedAsync(async () =>
-        {
-            await _service.RemoveReactionAsync(item.Id, _currentUserId);
+            if (currentEmoji == payload.Emoji)
+            {
+                // Same emoji tapped again → remove it (toggle off)
+                await _service.RemoveReactionAsync(payload.Message.Id, _currentUserId);
+            }
+            else
+            {
+                // Different emoji or no reaction yet → add/change
+                await _service.ReactAsync(
+                    payload.Message.Id, _currentUserId, payload.Emoji);
+            }
 
             await LoadMessagesAsync();
         });
