@@ -7,7 +7,7 @@ using Events_GSS.Data.Repositories.categoriesRepository;
 
 namespace Events_GSS.Data.Services.categoryServices;
 
-internal class CategoryServices: ICategoryServices
+public class CategoryServices: ICategoryServices
 {
     private readonly ICategoryRepository _categoryRepository;
     public CategoryServices(ICategoryRepository categoryRepository)

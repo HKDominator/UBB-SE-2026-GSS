@@ -4,7 +4,9 @@ using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Repositories.Interfaces;
 using Events_GSS.Data.Services;
 using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.UIServices;
 using Events_GSS.ViewModels;
+using Events_GSS.Views;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -39,6 +41,16 @@ public sealed partial class MainWindow : Window
         {
             await MemoriesView.LoadAsync(currentEvent, currentUser);
         };
+
+
+        //added by me
+        var navigationService = App.Services.GetRequiredService<INavigationServices>();
+        ((NavigationServices)navigationService).SetFrame(RootFrame);
+
+        // Navigate to EventListingPage
+        var viewModel = App.Services.GetRequiredService<EventListingViewModel>();
+        RootFrame.Navigate(typeof(EventListingPage), viewModel);
+        //end of added by me
 
     }
 }

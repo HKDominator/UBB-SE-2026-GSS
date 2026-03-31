@@ -16,6 +16,10 @@
     <Grid>
         <views:MemoryView x:Name="MemoriesView" 
                   ViewModel="{x:Bind MemoriesViewModel}" />
-
+        
+        <!--added by me -->
+        <Frame x:Name="RootFrame" />
+        <!--end of added by me-->
+        
     </Grid>
 </Window>

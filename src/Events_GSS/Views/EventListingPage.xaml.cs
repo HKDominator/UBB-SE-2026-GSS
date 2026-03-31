@@ -24,17 +24,24 @@ namespace Events_GSS.Views;
 
 public sealed partial class EventListingPage : Page
 {
-    public EventListingViewModel ViewModel { get; }
+    public EventListingViewModel ViewModel { get; private set; }= null!;
 
     public EventListingPage(EventListingViewModel viewModel)
     {
         this.InitializeComponent();
-        ViewModel = viewModel;
+        //ViewModel = viewModel;
     }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
+        //base.OnNavigatedTo(e);
+        //ViewModel.LoadCommand.Execute(null);
+
         base.OnNavigatedTo(e);
-        ViewModel.LoadCommand.Execute(null);
+        if (e.Parameter is EventListingViewModel vm)
+        {
+            ViewModel = vm;
+            ViewModel.LoadCommand.Execute(null);
+        }
     }
 }

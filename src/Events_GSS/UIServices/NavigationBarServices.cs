@@ -8,9 +8,9 @@ namespace Events_GSS.UIServices;
 
 public class NavigationServices : INavigationServices
 {
-    private readonly Frame _frame;
+    private Frame? _frame;
 
-    public NavigationServices(Frame frame)
+    public void SetFrame(Frame frame)
     {
         _frame = frame;
     }

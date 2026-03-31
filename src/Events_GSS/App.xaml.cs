@@ -24,6 +24,15 @@ using Events_GSS.Data.Repositories.Interfaces;
 using Events_GSS.Data.Services;
 using Events_GSS.Data.Services.Interfaces;
 
+using Events_GSS.Data.Repositories.categoriesRepository;
+using Events_GSS.Data.Repositories.eventRepository;
+using Events_GSS.Data.Services.categoryServices;
+using Events_GSS.Data.Services.eventServices;
+using Events_GSS.Data.Models;
+using Events_GSS.UIServices;
+using Events_GSS.ViewModels;
+
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -59,6 +68,26 @@ namespace Events_GSS
             services.AddTransient<IQuestService,QuestService>();
             services.AddTransient<IMemoryRepository,MemoryRepository>();
             services.AddTransient<IMemoryService,MemoryService>();
+
+
+            //Added by me:
+            // Event
+            services.AddTransient<IEventRepository, EventRepository>();
+            services.AddTransient<IEventService, EventService>();
+
+            // Category
+            services.AddTransient<ICategoryRepository, CategoryRepository>();
+            services.AddTransient<ICategoryServices, CategoryServices>();
+
+            // Navigation
+            services.AddSingleton<INavigationServices, NavigationServices>();
+
+            // ViewModels
+            services.AddTransient<NavigationBarViewModel>();
+            services.AddTransient<EventListingViewModel>();
+
+            ///end of what i have added
+            ///
 
             Services = services.BuildServiceProvider();
         }
