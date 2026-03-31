@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -25,5 +26,14 @@ public interface IDiscussionRepository
     Task<DiscussionMute?> GetMuteAsync(int eventId, int userId);
     Task MuteAsync(DiscussionMute mute);
     Task UnmuteAsync(int eventId, int userId);
+
+    // -─ Slow Mode ───────────────────────────────────────────────-
+    Task SetSlowModeAsync(int eventId, int? seconds);
+
+    // ── Participants ─────────────────────────────────────────────────────
+    //<summary>
+    //Used for the @mention lookup when posting messages. Returns all users who have participated in the discussion (posted a message or reaction).
+    //</summary>
+    Task<List<User>> GetsEventParticipantsAsync(int eventId);
 }
 

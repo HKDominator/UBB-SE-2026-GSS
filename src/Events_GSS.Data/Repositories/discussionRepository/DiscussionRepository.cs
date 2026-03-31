@@ -93,7 +93,6 @@ public class DiscussionRepository : IDiscussionRepository
 
         if (messages.Count == 0) return messages;
 
-        // 2. Batch-load all reactions for this event's messages in one query
         var messageIds = messages.Select(m => m.Id).ToList();
         var idParams = string.Join(",", messageIds.Select((_, i) => $"@mid{i}"));
 
@@ -130,7 +129,8 @@ public class DiscussionRepository : IDiscussionRepository
                 allReactions.Add((messageId, reaction));
             }
         }
-        // 3. Attach reactions to their messages
+
+        // Attach reactions to their messages
         var reactionsByMessage = allReactions
             .GroupBy(r => r.MessageId)
             .ToDictionary(g => g.Key, g => g.Select(x => x.Reaction).ToList());
@@ -408,5 +408,46 @@ public class DiscussionRepository : IDiscussionRepository
                 Name = reader.GetString(reader.GetOrdinal("AuthorName"))
             }
         };
+    }
+
+    public async Task SetSlowModeAsync(int eventId, int? seconds)
+    {
+        using var conn = _connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+
+        const string query = @"UPDATE Events SET SlowModeSeconds = @Seconds WHERE EventId = @EventId";
+
+        using var command = new SqlCommand(query, conn);
+
+        command.Parameters.AddWithValue("@EventId", eventId);
+        command.Parameters.AddWithValue("@Seconds", (object?)seconds ?? DBNull.Value);
+        await command.ExecuteNonQueryAsync();
+    }
+
+    public async Task<List<User>> GetsEventParticipantsAsync(int eventId)
+    {
+        var users = new List<User>();
+        using var conn = _connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+
+        const string query = @"
+            SELECT u.Id, u.Name
+            FROM AttendedEvents ae
+            INNER JOIN Users as u ON ae.UserId = u.Id
+            WHERE ae.EventId = @EventId
+            ORDER BY u.Name";
+        using var command = new SqlCommand(query, conn);
+        command.Parameters.AddWithValue("EventId", eventId);
+
+        using var reader = await command.ExecuteReaderAsync();
+        while( await reader.ReadAsync())
+        {
+            users.Add(new User
+            {
+                UserId = reader.GetInt32(reader.GetOrdinal("Id")),
+                Name = reader.GetString(reader.GetOrdinal("Name"))
+            });
+        }
+        return users;
     }
 }
