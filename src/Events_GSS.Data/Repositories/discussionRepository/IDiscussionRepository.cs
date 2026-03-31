@@ -34,6 +34,6 @@ public interface IDiscussionRepository
     //<summary>
     //Used for the @mention lookup when posting messages. Returns all users who have participated in the discussion (posted a message or reaction).
     //</summary>
-    Task<List<User>> GetsEventParticipantsAsync(int eventId);
+    Task<List<User>> GetEventParticipantsAsync(int eventId);
 }
 

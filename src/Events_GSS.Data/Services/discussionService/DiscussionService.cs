@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
@@ -70,7 +71,6 @@ public class DiscussionService : IDiscussionService
                         $"You are muted. Time remaining: {FormatDuration(remaining)}");
                 }
 
-                // Mute has expired — lift it automatically
                 await _repo.UnmuteAsync(eventId, userId);
             }
         }
@@ -81,11 +81,11 @@ public class DiscussionService : IDiscussionService
             var lastDate = await _repo.GetLastUserMessageDateAsync(eventId, userId);
             if (lastDate.HasValue)
             {
-                var timeElapsedSinceLastMessage = DateTime.UtcNow - lastDate.Value;
+                var elapsed = DateTime.UtcNow - lastDate.Value;
                 var required = TimeSpan.FromSeconds(ev.SlowModeSeconds.Value);
-                if (timeElapsedSinceLastMessage < required)
+                if (elapsed < required)
                 {
-                    var remaining = required - timeElapsedSinceLastMessage;
+                    var remaining = required - elapsed;
                     throw new InvalidOperationException(
                         $"Slow mode active. Wait {(int)remaining.TotalSeconds} seconds.");
                 }
@@ -105,18 +105,20 @@ public class DiscussionService : IDiscussionService
 
         await _repo.AddAsync(message);
 
-        if( !string.IsNullOrWhiteSpace(text))
+        // ── Parse @mentions ──────────────────────────────────
+        if (!string.IsNullOrWhiteSpace(text))
         {
             var mentionedNames = ParseMentions(text);
-            if(mentionedNames.Count > 0)
+            if (mentionedNames.Count > 0)
             {
                 var participants = await _repo.GetEventParticipantsAsync(eventId);
                 var mentionedUsers = participants
                     .Where(p => mentionedNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase))
-                    .Where(p => p.UserId != userId) // Don't notify self-mentions
-                    .GroupBy(p => p.UserId)
+                    .Where(p => p.UserId != userId) // don't notify yourself
+                    .GroupBy(p => p.UserId)          // one notification per user
                     .Select(g => g.First())
                     .ToList();
+
                 // TODO: Call notification service for each mentionedUser
                 // e.g.: foreach (var u in mentionedUsers)
                 //           await _notificationService.SendAsync(u.UserId, "Mention", $"You were mentioned by ...");
@@ -133,7 +135,6 @@ public class DiscussionService : IDiscussionService
         if (message is null)
             throw new KeyNotFoundException($"Message with ID {messageId} does not exist.");
 
-        // Only the author or admin can delete
         if (message.Author?.UserId != userId && !isAdmin)
             throw new UnauthorizedAccessException("You can only delete your own messages.");
 
@@ -179,31 +180,32 @@ public class DiscussionService : IDiscussionService
         await _repo.UnmuteAsync(eventId, targetUserId);
     }
 
-    // ── Slow Mode ───────────────────────────────────────────────────────────────
+    // ── Slow Mode ─────────────────────────────────────────────────────────────
 
     public async Task SetSlowModeAsync(int eventId, int? seconds, int adminUserId)
     {
         await EnsureAdminAsync(eventId, adminUserId);
 
-        if(seconds.HasValue && seconds.Value <= 0)
-            throw new ArgumentException("Slow mode seconds must be positive number of seconds");
+        if (seconds.HasValue && seconds.Value <= 0)
+            throw new ArgumentException("Slow mode interval must be a positive number of seconds.");
+
         await _repo.SetSlowModeAsync(eventId, seconds);
     }
 
     public async Task<int?> GetSlowModeSecondsAsync(int eventId)
     {
-        var eventCheck = await GetEventOrThrowAsync(eventId);
-        return eventCheck.SlowModeSeconds;
+        var ev = await GetEventOrThrowAsync(eventId);
+        return ev.SlowModeSeconds;
     }
 
-    // ── Participants ───────────────────────────────────────────────────────────
+    // ── Participants ──────────────────────────────────────────────────────────
 
     public async Task<List<User>> GetEventParticipantsAsync(int eventId)
     {
         return await _repo.GetEventParticipantsAsync(eventId);
     }
 
-    // ── Mention parsing (simple implementation) ────────────────────────────────
+    // ── Mention Parser ───────────────────────────────────────────────────────
 
     /// <summary>
     /// Extracts unique @mentioned names from message text.

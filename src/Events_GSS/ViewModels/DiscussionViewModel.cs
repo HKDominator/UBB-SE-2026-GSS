@@ -2,7 +2,6 @@
 using System.Collections.ObjectModel;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml.Linq;
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -15,7 +14,6 @@ using Microsoft.UI.Xaml;
 
 namespace Events_GSS.ViewModels;
 
-// ── Payload records for commands with multiple parameters ────────────────────
 public record DiscussionReactionPayload(DiscussionMessageItemViewModel Message, string Emoji);
 public record MutePayload(int TargetUserId, DateTime? Until);
 
@@ -37,11 +35,13 @@ public partial class DiscussionViewModel : ObservableObject
         IsEventAdmin = isAdmin;
 
         Messages = new ObservableCollection<DiscussionMessageItemViewModel>();
+        Participants = new ObservableCollection<User>();
     }
 
     // ── Collections ──────────────────────────────────────────────────────────
 
     public ObservableCollection<DiscussionMessageItemViewModel> Messages { get; }
+    public ObservableCollection<User> Participants { get; }
 
     // ── Observable state ─────────────────────────────────────────────────────
 
@@ -76,20 +76,41 @@ public partial class DiscussionViewModel : ObservableObject
     [ObservableProperty]
     private int _slowModeRemainingSeconds;
 
+    // Slow mode configuration (admin)
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(IsSlowModeActive))]
+    [NotifyPropertyChangedFor(nameof(SlowModeStatusText))]
+    private int? _currentSlowModeSeconds;
+
     // ── Computed ─────────────────────────────────────────────────────────────
 
     public bool IsNotLoading => !IsLoading;
     public bool HasError => ErrorMessage is not null;
     public Visibility ErrorVisibility => HasError ? Visibility.Visible : Visibility.Collapsed;
     public bool IsInReplyMode => ReplyTarget is not null;
+    public bool IsSlowModeActive => CurrentSlowModeSeconds.HasValue && CurrentSlowModeSeconds.Value > 0;
+
+    public string SlowModeStatusText => IsSlowModeActive
+        ? $"Slow mode: {CurrentSlowModeSeconds}s between messages"
+        : "Slow mode: Off";
 
     // ── Initialization ───────────────────────────────────────────────────────
-    //
-    //  Called from the page's OnNavigatedTo so the caller owns the Task.
 
     public async Task InitializeAsync()
     {
-        await RunGuardedAsync(LoadMessagesAsync);
+        await RunGuardedAsync(async () =>
+        {
+            await LoadMessagesAsync();
+
+            // Load slow mode state
+            CurrentSlowModeSeconds = await _service.GetSlowModeSecondsAsync(_event.EventId);
+
+            // Load participants for @mention suggestions
+            var participants = await _service.GetEventParticipantsAsync(_event.EventId);
+            Participants.Clear();
+            foreach (var p in participants)
+                Participants.Add(p);
+        });
     }
 
     // ── Commands ─────────────────────────────────────────────────────────────
@@ -103,7 +124,7 @@ public partial class DiscussionViewModel : ObservableObject
         Messages.Clear();
         foreach (var m in list)
         {
-            Messages.Add(new DiscussionMessageItemViewModel(m, _currentUserId));
+            Messages.Add(new DiscussionMessageItemViewModel(m, _currentUserId, IsEventAdmin));
         }
     }
 
@@ -134,7 +155,7 @@ public partial class DiscussionViewModel : ObservableObject
             {
                 IsMuted = true;
                 MuteRemainingText = ex.Message;
-                throw; // let RunGuardedAsync set ErrorMessage too
+                throw;
             }
             catch (InvalidOperationException ex)
                 when (ex.Message.Contains("Slow mode", StringComparison.OrdinalIgnoreCase))
@@ -167,13 +188,10 @@ public partial class DiscussionViewModel : ObservableObject
 
             Messages.Remove(item);
 
-            // Mark replies whose original was just deleted
             foreach (var m in Messages)
             {
                 if (m.ReplyTo?.Id == item.Id)
-                {
                     m.IsOriginalDeleted = true;
-                }
             }
         });
     }
@@ -204,16 +222,9 @@ public partial class DiscussionViewModel : ObservableObject
             var currentEmoji = payload.Message.CurrentUserEmoji;
 
             if (currentEmoji == payload.Emoji)
-            {
-                // Same emoji tapped again → remove it (toggle off)
                 await _service.RemoveReactionAsync(payload.Message.Id, _currentUserId);
-            }
             else
-            {
-                // Different emoji or no reaction yet → add/change
-                await _service.ReactAsync(
-                    payload.Message.Id, _currentUserId, payload.Emoji);
-            }
+                await _service.ReactAsync(payload.Message.Id, _currentUserId, payload.Emoji);
 
             await LoadMessagesAsync();
         });
@@ -244,6 +255,37 @@ public partial class DiscussionViewModel : ObservableObject
             await _service.UnmuteUserAsync(
                 _event.EventId, targetUserId, _currentUserId);
         });
+    }
+
+    // ── Admin: Slow Mode ─────────────────────────────────────────────────────
+
+    [RelayCommand]
+    private async Task SetSlowModeAsync(int? seconds)
+    {
+        await RunGuardedAsync(async () =>
+        {
+            await _service.SetSlowModeAsync(_event.EventId, seconds, _currentUserId);
+            CurrentSlowModeSeconds = seconds;
+        });
+    }
+
+    // ── Mention Helper ───────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Inserts @Name at current cursor position in NewMessage.
+    /// Called from the view when a participant is selected from the suggestion list.
+    /// </summary>
+    public void InsertMention(string userName)
+    {
+        if (string.IsNullOrWhiteSpace(userName)) return;
+
+        var mention = $"@{userName} ";
+
+        // If there's already text and it doesn't end with a space, add one
+        if (!string.IsNullOrEmpty(NewMessage) && !NewMessage.EndsWith(" "))
+            NewMessage += " ";
+
+        NewMessage += mention;
     }
 
     // ── Helpers ──────────────────────────────────────────────────────────────

@@ -22,7 +22,7 @@ public interface IDiscussionService
     Task UnmuteUserAsync(int eventId, int targetUserId, int adminUserId);
 
     // ── Slow Mode ───────────────────────────────────────────────
-    Task SetSlowModeAsync(int eventId, int? seconds, int AdminUserId);
+    Task SetSlowModeAsync(int eventId, int? seconds, int adminUserId);
     Task<int?> GetSlowModeSecondsAsync(int eventId);
 
     // ── Participants ─────────────────────────────────────────────────────

@@ -30,11 +30,12 @@ public sealed partial class MainWindow : Window
         // TODO: PlaceHolder for event data, replace when navigation is implemented
         var currentEvent = new Event { EventId = 1 };
         var currentUserId = 1; // Placeholder for current user ID, replace with actual user context
-        bool isAdmin = true; // Placeholder for admin check, replace with actual logic
+        bool isAdmin = false; // Placeholder for admin check, replace with actual logic
         var currentUser = new User { UserId = 1 };
         var currentUser2 = new User { UserId = 2 };
+        var currentUser3 = new User { UserId = 3 };
 
-        DiscussionViewModel = new DiscussionViewModel(currentEvent, services, currentUserId, isAdmin);
+        DiscussionViewModel = new DiscussionViewModel(currentEvent, services, currentUser3.UserId, isAdmin);
         QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
         MemoriesViewModel = new MemoryViewModel(memoryService);
         //this.Activated += async (s, e) =>

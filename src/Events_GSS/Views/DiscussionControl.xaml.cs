@@ -1,7 +1,10 @@
 using System;
 
+using Microsoft.UI;
+using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Documents;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 
@@ -31,8 +34,6 @@ public sealed partial class DiscussionControl : UserControl
         InitializeComponent();
     }
 
-    // ── Auto-scroll + empty state when the collection changes ────────────────
-
     private static void OnViewModelChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is DiscussionControl control && e.NewValue is DiscussionViewModel vm)
@@ -45,7 +46,34 @@ public sealed partial class DiscussionControl : UserControl
         }
     }
 
-    // ── Event handlers (bridge XAML events → ViewModel commands) ──────────────
+    // ── Mention Highlighting ─────────────────────────────────────────────────
+
+    private void OnMessageTextLoaded(object sender, RoutedEventArgs e)
+    {
+        if (sender is not RichTextBlock rtb) return;
+        if (rtb.DataContext is not DiscussionMessageItemViewModel item) return;
+
+        rtb.Blocks.Clear();
+
+        var paragraph = new Paragraph();
+
+        foreach (var segment in item.MessageSegments)
+        {
+            var run = new Run { Text = segment.Text };
+
+            if (segment.IsMention)
+            {
+                run.Foreground = new SolidColorBrush(Colors.DodgerBlue);
+                run.FontWeight = FontWeights.SemiBold;
+            }
+
+            paragraph.Inlines.Add(run);
+        }
+
+        rtb.Blocks.Add(paragraph);
+    }
+
+    // ── Reply ────────────────────────────────────────────────────────────────
 
     private void OnReplyClicked(object sender, RoutedEventArgs e)
     {
@@ -57,12 +85,13 @@ public sealed partial class DiscussionControl : UserControl
         }
     }
 
+    // ── Reactions ────────────────────────────────────────────────────────────
+
     private void OnEmojiClicked(object sender, RoutedEventArgs e)
     {
         if (sender is not Button btn || btn.Tag is not string emoji || ViewModel is null)
             return;
 
-        // Walk up the visual tree to find the DataTemplate's DataContext
         var item = FindAncestorDataContext<DiscussionMessageItemViewModel>(btn);
         if (item is not null)
         {
@@ -70,6 +99,34 @@ public sealed partial class DiscussionControl : UserControl
                 new DiscussionReactionPayload(item, emoji));
         }
     }
+
+    // ── Delete ───────────────────────────────────────────────────────────────
+
+    private async void OnDeleteClicked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement fe
+            || fe.Tag is not DiscussionMessageItemViewModel item
+            || ViewModel is null)
+            return;
+
+        var dialog = new ContentDialog
+        {
+            Title = "Delete message",
+            Content = "Are you sure you want to delete this message? This cannot be undone.",
+            PrimaryButtonText = "Delete",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            ViewModel.DeleteMessageCommand.Execute(item);
+        }
+    }
+
+    // ── Mute (with custom duration) ──────────────────────────────────────────
 
     private async void OnMuteClicked(object sender, RoutedEventArgs e)
     {
@@ -79,20 +136,56 @@ public sealed partial class DiscussionControl : UserControl
             || !ViewModel.IsEventAdmin)
             return;
 
-        // Don't allow muting yourself
-        if (item.Author?.UserId == 0) return; // shouldn't happen but guard
+        var panel = new StackPanel { Spacing = 12 };
 
         var combo = new ComboBox
         {
             PlaceholderText = "Select duration",
             HorizontalAlignment = HorizontalAlignment.Stretch,
-            ItemsSource = new[] { "1 hour", "24 hours", "Permanent" }
+            ItemsSource = new[] { "1 hour", "24 hours", "Custom", "Permanent" }
         };
+
+        var customPanel = new StackPanel
+        {
+            Spacing = 8,
+            Visibility = Visibility.Collapsed
+        };
+
+        var hoursBox = new NumberBox
+        {
+            Header = "Hours",
+            Minimum = 0,
+            Maximum = 720,
+            Value = 0,
+            SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
+        };
+
+        var minutesBox = new NumberBox
+        {
+            Header = "Minutes",
+            Minimum = 0,
+            Maximum = 59,
+            Value = 30,
+            SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
+        };
+
+        customPanel.Children.Add(hoursBox);
+        customPanel.Children.Add(minutesBox);
+
+        combo.SelectionChanged += (_, _) =>
+        {
+            customPanel.Visibility = combo.SelectedItem is string s && s == "Custom"
+                ? Visibility.Visible
+                : Visibility.Collapsed;
+        };
+
+        panel.Children.Add(combo);
+        panel.Children.Add(customPanel);
 
         var dialog = new ContentDialog
         {
             Title = $"Mute {item.Author?.Name ?? "user"}",
-            Content = combo,
+            Content = panel,
             PrimaryButtonText = "Mute",
             CloseButtonText = "Cancel",
             DefaultButton = ContentDialogButton.Close,
@@ -107,6 +200,9 @@ public sealed partial class DiscussionControl : UserControl
                 "1 hour" => DateTime.UtcNow.AddHours(1),
                 "24 hours" => DateTime.UtcNow.AddHours(24),
                 "Permanent" => null,
+                "Custom" => DateTime.UtcNow
+                    .AddHours((int)hoursBox.Value)
+                    .AddMinutes((int)minutesBox.Value),
                 _ => DateTime.UtcNow.AddHours(1)
             };
 
@@ -114,6 +210,46 @@ public sealed partial class DiscussionControl : UserControl
                 new MutePayload(item.Author!.UserId, until));
         }
     }
+
+    // ── Slow Mode Config ─────────────────────────────────────────────────────
+
+    private async void OnConfigureSlowModeClicked(object sender, RoutedEventArgs e)
+    {
+        if (ViewModel is null) return;
+
+        var numberBox = new NumberBox
+        {
+            Header = "Seconds between messages per user",
+            Minimum = 1,
+            Maximum = 3600,
+            Value = ViewModel.CurrentSlowModeSeconds ?? 30,
+            SpinButtonPlacementMode = NumberBoxSpinButtonPlacementMode.Inline
+        };
+
+        var dialog = new ContentDialog
+        {
+            Title = "Configure Slow Mode",
+            Content = numberBox,
+            PrimaryButtonText = "Enable",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            int seconds = (int)numberBox.Value;
+            ViewModel.SetSlowModeCommand.Execute(seconds as int?);
+        }
+    }
+
+    private void OnDisableSlowModeClicked(object sender, RoutedEventArgs e)
+    {
+        ViewModel?.SetSlowModeCommand.Execute(null as int?);
+    }
+
+    // ── Media Attach ─────────────────────────────────────────────────────────
 
     private async void OnAttachMediaClicked(object sender, RoutedEventArgs e)
     {
@@ -148,36 +284,13 @@ public sealed partial class DiscussionControl : UserControl
         }
     }
 
-    private async void OnDeleteClicked(object sender, RoutedEventArgs e)
-    {
-        if (sender is not FrameworkElement fe
-            || fe.Tag is not DiscussionMessageItemViewModel item
-            || ViewModel is null)
-            return;
-
-        var dialog = new ContentDialog
-        {
-            Title = "Delete message",
-            Content = "Are you sure you want to delete this message? This cannot be undone.",
-            PrimaryButtonText = "Delete",
-            CloseButtonText = "Cancel",
-            DefaultButton = ContentDialogButton.Close,
-            XamlRoot = this.XamlRoot
-        };
-
-        var result = await dialog.ShowAsync();
-        if (result == ContentDialogResult.Primary)
-        {
-            ViewModel.DeleteMessageCommand.Execute(item);
-        }
-    }
     private void OnClearMediaClicked(object sender, RoutedEventArgs e)
     {
         if (ViewModel is not null)
-        {
             ViewModel.MediaPath = null;
-        }
     }
+
+    // ── Enter to Send ────────────────────────────────────────────────────────
 
     private void OnMessageInputKeyDown(object sender, KeyRoutedEventArgs e)
     {
@@ -212,10 +325,6 @@ public sealed partial class DiscussionControl : UserControl
                 : Visibility.Collapsed;
     }
 
-    /// <summary>
-    /// Walks up the visual tree from <paramref name="start"/> until it finds
-    /// a FrameworkElement whose DataContext is of type <typeparamref name="T"/>.
-    /// </summary>
     private static T? FindAncestorDataContext<T>(DependencyObject start) where T : class
     {
         var current = start;
@@ -223,10 +332,8 @@ public sealed partial class DiscussionControl : UserControl
         {
             if (current is FrameworkElement fe && fe.DataContext is T found)
                 return found;
-
             current = VisualTreeHelper.GetParent(current);
         }
-
         return null;
     }
 }

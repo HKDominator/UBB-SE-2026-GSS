@@ -9,9 +9,11 @@
     <UserControl.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility" />
         <conv:NullToCollapsedConverter x:Key="NullToCollapsed" />
+        <conv:MentionForegroundConverter x:Key="MentionForeground" />
+        <conv:MentionFontWeightConverter x:Key="MentionFontWeight" />
     </UserControl.Resources>
 
-    <Grid RowDefinitions="Auto,*,Auto,Auto">
+    <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
 
         <!-- ═══════════════════════════════════════════════════════
              ROW 0 — Error Banner
@@ -30,11 +32,55 @@
         </Border>
 
         <!-- ═══════════════════════════════════════════════════════
-             ROW 1 — Messages List
+             ROW 1 — Admin Controls (Slow Mode)
+             ═══════════════════════════════════════════════════════ -->
+        <Border
+            Grid.Row="1"
+            Visibility="{x:Bind ViewModel.IsEventAdmin, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
+            Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+            BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+            BorderThickness="0,0,0,1"
+            Padding="12,8">
+
+            <Grid ColumnDefinitions="Auto,Auto,Auto,Auto,*,Auto">
+                <FontIcon
+                    Grid.Column="0"
+                    Glyph="&#xE916;"
+                    FontSize="14"
+                    VerticalAlignment="Center"
+                    Margin="0,0,8,0" />
+
+                <TextBlock
+                    Grid.Column="1"
+                    Text="{x:Bind ViewModel.SlowModeStatusText, Mode=OneWay}"
+                    Style="{ThemeResource CaptionTextBlockStyle}"
+                    VerticalAlignment="Center"
+                    Margin="0,0,12,0" />
+
+                <Button
+                    Grid.Column="2"
+                    Content="Configure"
+                    FontSize="12"
+                    Padding="8,4"
+                    Click="OnConfigureSlowModeClicked"
+                    Margin="0,0,4,0" />
+
+                <Button
+                    Grid.Column="3"
+                    Content="Turn Off"
+                    FontSize="12"
+                    Padding="8,4"
+                    Click="OnDisableSlowModeClicked"
+                    Visibility="{x:Bind ViewModel.IsSlowModeActive, Mode=OneWay, Converter={StaticResource BoolToVisibility}}" />
+            </Grid>
+        </Border>
+
+        <!-- ═══════════════════════════════════════════════════════
+             ROW 2 — Messages List
              ═══════════════════════════════════════════════════════ -->
         <ListView
             x:Name="MessagesListView"
-            Grid.Row="1"
+            Grid.Row="2"
             ItemsSource="{x:Bind ViewModel.Messages, Mode=OneWay}"
             SelectionMode="None"
             Padding="8,4">
@@ -134,14 +180,14 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- ── Message Content ─────────────────────── -->
+                        <!-- ── Message Content with @mention highlighting ── -->
                         <TextBlock
                             Grid.Row="2"
                             Text="{x:Bind Message, FallbackValue=''}"
                             TextWrapping="Wrap"
                             Style="{ThemeResource BodyTextBlockStyle}"
                             Margin="0,0,0,4"
-                            Visibility="{x:Bind Message, Mode=OneWay, Converter={StaticResource NullToCollapsed}}" />
+                            Visibility="{x:Bind Message, Mode=OneWay, Converter={StaticResource NullToCollapsed}}" />       
 
                         <!-- ── Media Indicator ─────────────────────── -->
                         <StackPanel
@@ -229,11 +275,12 @@
                                 Visibility="{x:Bind CanDelete, Converter={StaticResource BoolToVisibility}}"
                                 Click="OnDeleteClicked" />
 
-                            <!-- Admin: Mute user button (only on other users' messages) -->
+                            <!-- Admin-only Mute button -->
                             <Button
                                 FontSize="12"
                                 Padding="6,2"
                                 Tag="{x:Bind}"
+                                Visibility="{x:Bind ShowMuteButton, Converter={StaticResource BoolToVisibility}}"
                                 Click="OnMuteClicked">
                                 <StackPanel Orientation="Horizontal" Spacing="4">
                                     <FontIcon Glyph="&#xE74D;" FontSize="12" />
@@ -258,9 +305,9 @@
         </ListView>
 
         <!-- ═══════════════════════════════════════════════════════
-             ROW 2 — Reply Preview + Mute Banner + Media Preview
+             ROW 3 — Reply Preview + Mute Banner + Media Preview
              ═══════════════════════════════════════════════════════ -->
-        <StackPanel Grid.Row="2" Spacing="0">
+        <StackPanel Grid.Row="3" Spacing="0">
 
             <Border
                 Visibility="{x:Bind ViewModel.IsInReplyMode, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
@@ -329,10 +376,10 @@
         </StackPanel>
 
         <!-- ═══════════════════════════════════════════════════════
-             ROW 3 — Input Area
+             ROW 4 — Input Area
              ═══════════════════════════════════════════════════════ -->
         <Grid
-            Grid.Row="3"
+            Grid.Row="4"
             ColumnDefinitions="Auto,*,Auto"
             Padding="8"
             Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
@@ -372,7 +419,7 @@
 
         <!-- Loading overlay -->
         <ProgressRing
-            Grid.Row="1"
+            Grid.Row="2"
             IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"
             HorizontalAlignment="Center"
             VerticalAlignment="Center" />

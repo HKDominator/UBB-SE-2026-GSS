@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Events_GSS.Data.Database;
@@ -27,7 +28,6 @@ public class DiscussionRepository : IDiscussionRepository
         using var conn = _connectionFactory.CreateConnection();
         await conn.OpenAsync();
 
-        // 1. Load messages with reply references
         const string msgQuery = @"
             SELECT
                 d.DiscussionId,  d.Message,  d.MediaPath,
@@ -93,6 +93,7 @@ public class DiscussionRepository : IDiscussionRepository
 
         if (messages.Count == 0) return messages;
 
+        // Batch-load reactions
         var messageIds = messages.Select(m => m.Id).ToList();
         var idParams = string.Join(",", messageIds.Select((_, i) => $"@mid{i}"));
 
@@ -107,9 +108,7 @@ public class DiscussionRepository : IDiscussionRepository
         using (var cmd = new SqlCommand(rxnQuery, conn))
         {
             for (int i = 0; i < messageIds.Count; i++)
-            {
                 cmd.Parameters.AddWithValue($"@mid{i}", messageIds[i]);
-            }
 
             using var reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
@@ -130,7 +129,6 @@ public class DiscussionRepository : IDiscussionRepository
             }
         }
 
-        // Attach reactions to their messages
         var reactionsByMessage = allReactions
             .GroupBy(r => r.MessageId)
             .ToDictionary(g => g.Key, g => g.Select(x => x.Reaction).ToList());
@@ -138,12 +136,43 @@ public class DiscussionRepository : IDiscussionRepository
         foreach (var msg in messages)
         {
             if (reactionsByMessage.TryGetValue(msg.Id, out var reactions))
-            {
                 msg.Reactions = reactions;
-            }
         }
 
         return messages;
+    }
+
+    public async Task<DiscussionMessage?> GetByIdAsync(int messageId)
+    {
+        using var conn = _connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+
+        const string query = @"
+            SELECT d.DiscussionId, d.Message, d.Date, d.UserId,
+                   u.Name AS AuthorName
+            FROM Discussions d
+            INNER JOIN Users u ON d.UserId = u.Id
+            WHERE d.DiscussionId = @Id";
+
+        using var cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@Id", messageId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        if (!await reader.ReadAsync()) return null;
+
+        return new DiscussionMessage(
+            id: reader.GetInt32(reader.GetOrdinal("DiscussionId")),
+            message: reader.IsDBNull(reader.GetOrdinal("Message"))
+                ? null
+                : reader.GetString(reader.GetOrdinal("Message")),
+            date: reader.GetDateTime(reader.GetOrdinal("Date")))
+        {
+            Author = new User
+            {
+                UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
+                Name = reader.GetString(reader.GetOrdinal("AuthorName"))
+            }
+        };
     }
 
     public async Task<int> AddAsync(DiscussionMessage message)
@@ -176,7 +205,6 @@ public class DiscussionRepository : IDiscussionRepository
         using var conn = _connectionFactory.CreateConnection();
         await conn.OpenAsync();
 
-        // Detach replies first (SQL Server disallows ON DELETE SET NULL on self-refs)
         const string detachReplies = @"
             UPDATE Discussions SET ReplyToId = NULL WHERE ReplyToId = @Id";
 
@@ -221,7 +249,6 @@ public class DiscussionRepository : IDiscussionRepository
         using var conn = _connectionFactory.CreateConnection();
         await conn.OpenAsync();
 
-        // Upsert: one reaction per user per message
         const string query = @"
             IF EXISTS (SELECT 1 FROM DiscussionReactions WHERE MessageId = @MsgId AND UserId = @UserId)
                 UPDATE DiscussionReactions
@@ -332,7 +359,6 @@ public class DiscussionRepository : IDiscussionRepository
         using var conn = _connectionFactory.CreateConnection();
         await conn.OpenAsync();
 
-        // Remove any existing mute first (UQ constraint on EventId, MutedUserId)
         const string remove = @"
             DELETE FROM DiscussionMutes
             WHERE EventId = @EventId AND MutedUserId = @UserId";
@@ -377,70 +403,43 @@ public class DiscussionRepository : IDiscussionRepository
         await cmd.ExecuteNonQueryAsync();
     }
 
-    public async Task<DiscussionMessage?> GetByIdAsync(int messageId)
-    {
-        using var conn = _connectionFactory.CreateConnection();
-        await conn.OpenAsync();
-
-        const string query = @"
-            SELECT d.DiscussionId, d.Message, d.Date, d.UserId,
-                   u.Name AS AuthorName
-            FROM Discussions d
-            INNER JOIN Users u ON d.UserId = u.Id
-            WHERE d.DiscussionId = @Id";
-
-        using var cmd = new SqlCommand(query, conn);
-        cmd.Parameters.AddWithValue("@Id", messageId);
-
-        using var reader = await cmd.ExecuteReaderAsync();
-        if (!await reader.ReadAsync()) return null;
-
-        return new DiscussionMessage(
-            id: reader.GetInt32(reader.GetOrdinal("DiscussionId")),
-            message: reader.IsDBNull(reader.GetOrdinal("Message"))
-                ? null
-                : reader.GetString(reader.GetOrdinal("Message")),
-            date: reader.GetDateTime(reader.GetOrdinal("Date")))
-        {
-            Author = new User
-            {
-                UserId = reader.GetInt32(reader.GetOrdinal("UserId")),
-                Name = reader.GetString(reader.GetOrdinal("AuthorName"))
-            }
-        };
-    }
+    // ── Slow Mode ─────────────────────────────────────────────────────────────
 
     public async Task SetSlowModeAsync(int eventId, int? seconds)
     {
         using var conn = _connectionFactory.CreateConnection();
         await conn.OpenAsync();
 
-        const string query = @"UPDATE Events SET SlowModeSeconds = @Seconds WHERE EventId = @EventId";
+        const string query = @"
+            UPDATE Events SET SlowModeSeconds = @Seconds WHERE EventId = @EventId";
 
-        using var command = new SqlCommand(query, conn);
-
-        command.Parameters.AddWithValue("@EventId", eventId);
-        command.Parameters.AddWithValue("@Seconds", (object?)seconds ?? DBNull.Value);
-        await command.ExecuteNonQueryAsync();
+        using var cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@EventId", eventId);
+        cmd.Parameters.AddWithValue("@Seconds", (object?)seconds ?? DBNull.Value);
+        await cmd.ExecuteNonQueryAsync();
     }
+
+    // ── Participants ──────────────────────────────────────────────────────────
 
     public async Task<List<User>> GetEventParticipantsAsync(int eventId)
     {
         var users = new List<User>();
+
         using var conn = _connectionFactory.CreateConnection();
         await conn.OpenAsync();
 
         const string query = @"
             SELECT u.Id, u.Name
             FROM AttendedEvents ae
-            INNER JOIN Users as u ON ae.UserId = u.Id
+            INNER JOIN Users u ON ae.UserId = u.Id
             WHERE ae.EventId = @EventId
             ORDER BY u.Name";
-        using var command = new SqlCommand(query, conn);
-        command.Parameters.AddWithValue("EventId", eventId);
 
-        using var reader = await command.ExecuteReaderAsync();
-        while( await reader.ReadAsync())
+        using var cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@EventId", eventId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
         {
             users.Add(new User
             {
@@ -448,6 +447,7 @@ public class DiscussionRepository : IDiscussionRepository
                 Name = reader.GetString(reader.GetOrdinal("Name"))
             });
         }
+
         return users;
     }
 }
