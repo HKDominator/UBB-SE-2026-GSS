@@ -1,16 +1,15 @@
 using Events_GSS.Data.Database;
-
-using Microsoft.UI.Xaml;
-
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Repositories.Interfaces;
-using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Data.Services;
+using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.ViewModels;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
+using Microsoft.WindowsAppSDK.Runtime.Packages;
 
 namespace Events_GSS;
 
@@ -28,8 +27,11 @@ public sealed partial class MainWindow : Window
 
 
         // TODO: PlaceHolder for event data, replace when navigation is implemented
-        var currentEvent = new Event { EventId = 1 };
         var currentUser = new User { UserId = 1 };
+        var currentUser2 = new User { UserId = 2 };
+        var currentEvent = new Event { EventId = 1, Admin = currentUser };
+        
+     
 
      //   QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
         MemoriesViewModel = new MemoryViewModel(memoryService);

@@ -2,11 +2,12 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Microsoft.Data.SqlClient;
-
+using Events_GSS.Data.Database;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories.Interfaces;
-using Events_GSS.Data.Database;
+
+using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.Logging;
 
 namespace Events_GSS.Data.Repositories
 {
@@ -22,10 +23,13 @@ namespace Events_GSS.Data.Repositories
 
         public async Task<List<Memory>> GetByEventAsync(int eventId)
         {
-            string getMemoriesByEventQuery = @"SELECT MemoryId, UserId, PhotoPath, Text, CreatedAt 
-                                               FROM Memories 
-                                               WHERE EventId = @EventId
-                                               ORDER BY CreatedAt DESC";
+
+            string getMemoriesByEventQuery = @"SELECT m.MemoryId, m.UserId, m.PhotoPath, m.Text, m.CreatedAt,
+       e.EventId, e.Name, e.AdminId
+FROM Memories m
+INNER JOIN Events e ON e.EventId = m.EventId
+WHERE m.EventId = @EventId
+ORDER BY m.CreatedAt DESC";
 
             using var conn = _factory.CreateConnection();
             await conn.OpenAsync();
@@ -42,7 +46,21 @@ namespace Events_GSS.Data.Repositories
                     PhotoPath = reader["PhotoPath"] == DBNull.Value ? null : (string)reader["PhotoPath"],
                     Text = reader["Text"] == DBNull.Value ? null : (string)reader["Text"],
                     CreatedAt = (DateTime)reader["CreatedAt"],
-                    Author = new User { UserId = (int)reader["UserId"] }
+
+                    Event = new Event
+                    {
+                        EventId = (int)reader["EventId"],
+                        Name = (string)reader["Name"],
+                        Admin = new User
+                        {
+                            UserId = (int)reader["AdminId"]
+                        }
+                    },
+
+                    Author = new User
+                    {
+                        UserId = (int)reader["UserId"]
+                    }
                 });
             }
             return memories;

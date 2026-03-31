@@ -33,9 +33,10 @@ namespace Events_GSS.ViewModels
             set { _isLikedByCurrentUser = value; OnPropertyChanged(); }
         }
 
-        // Visibility-equivalent booleans 
+      
         public bool CanDelete { get; }
         public bool CanLike { get; }
+       
 
         public MemoryItemViewModel(Memory memory, User currentUser)
         {
@@ -44,10 +45,13 @@ namespace Events_GSS.ViewModels
             _isLikedByCurrentUser = memory.IsLikedByCurrentUser;
 
             bool isAuthor = memory.Author?.UserId == currentUser.UserId;
+            var e = memory.Event;
+            var e2 = memory.Event.Admin.UserId;
             bool isEventAdmin = memory.Event?.Admin?.UserId == currentUser.UserId;
 
             CanDelete = isAuthor || isEventAdmin;
             CanLike = !isAuthor;
+           
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;
