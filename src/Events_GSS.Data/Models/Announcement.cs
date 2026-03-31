@@ -19,28 +19,26 @@ namespace Events_GSS.Data.Models
             Id = id;
             Message = message;
             Date = date;
-            IsPinned = false;
-            IsEdited = false;
-            IsRead = false;
-            IsExpanded = false;
+            Reactions = new List<AnnouncementReaction>();
 
         }
 
         public int Id { get; set; }
-        public string Message { get; set; } = string.Empty;
+        public string Message { get; set; } 
         public DateTime Date { get; set; }
 
-        public bool IsPinned { get; set; } = false;
+        public bool IsPinned { get; set; }
 
-        public bool IsEdited { get; set; } = false;
+        public bool IsEdited { get; set; } 
 
-        public bool IsRead { get; set; } = false;
+        public bool IsRead { get; set; }
 
-        public bool IsExpanded { get; set; } = false;
+        public bool IsExpanded { get; set; } 
 
         public Event Event { get; set; }
 
         public User? Author { get; set; }
+        public List<AnnouncementReaction> Reactions { get; set; }
 
     }
 }
