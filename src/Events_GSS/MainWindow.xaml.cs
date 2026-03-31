@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.WindowsAppSDK.Runtime.Packages;
+using Events_GSS.Data.Services.announcementServices;
 
 namespace Events_GSS;
 
@@ -19,11 +20,14 @@ public sealed partial class MainWindow : Window
     public DiscussionViewModel DiscussionViewModel { get; }
     public MemoryViewModel MemoriesViewModel { get; }
 
+    public AnnouncementViewModel AnnouncementViewModel { get; }
+
     public MainWindow()
     {
         InitializeComponent();
 
         var services = App.Services.GetRequiredService<IDiscussionService>();
+        var announcementService = App.Services.GetRequiredService<IAnnouncementService>();
         IQuestService qs = App.Services.GetRequiredService<IQuestService>();
         IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
 
@@ -38,10 +42,19 @@ public sealed partial class MainWindow : Window
         DiscussionViewModel = new DiscussionViewModel(currentEvent, services, currentUser3.UserId, isAdmin);
         QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
         MemoriesViewModel = new MemoryViewModel(memoryService);
+        AnnouncementViewModel = new AnnouncementViewModel(currentEvent, announcementService, currentUserId: 1, isAdmin: true);
         //this.Activated += async (s, e) =>
         //{
         //    await MemoriesView.LoadAsync(currentEvent, currentUser);
         //};
-        _ = DiscussionViewModel.InitializeAsync();
+
+        //for the discussion view
+        // in the xaml file
+        //        <views:DiscussionControl 
+        //ViewModel = "{x:Bind DiscussionViewModel}" />
+    //_ = DiscussionViewModel.InitializeAsync();
+
+    //for the announcement view
+    _ = AnnouncementViewModel.InitializeAsync();
     }
 }

@@ -14,6 +14,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="ViewModels\AnnouncementControl.xaml" />
+    <None Remove="Views\AnnouncementControl.xaml" />
     <None Remove="Views\DiscussionControl.xaml" />
     <None Remove="Views\QuestAdminControl.xaml" />
   </ItemGroup>
@@ -58,6 +60,12 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\AnnouncementControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="ViewModels\AnnouncementControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\DiscussionControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

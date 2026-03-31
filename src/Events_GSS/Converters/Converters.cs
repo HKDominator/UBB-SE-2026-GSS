@@ -77,3 +77,21 @@ public class MentionFontWeightConverter : IValueConverter
         throw new NotSupportedException();
     }
 }
+
+/// <summary>
+/// Converts bool IsExpanded to a chevron glyph: ▼ when expanded, ▶ when collapsed.
+/// </summary>
+public class ExpandChevronConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, string language)
+    {
+        if (value is bool expanded && expanded)
+            return "\uE70D"; // ChevronDown
+        return "\uE76C"; // ChevronRight
+    }
+
+    public object ConvertBack(object value, Type targetType, object parameter, string language)
+    {
+        throw new NotSupportedException();
+    }
+}

@@ -6,41 +6,37 @@ using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
-using Microsoft.UI.Xaml;
-
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Services.announcementServices;
+using Events_GSS.Data.Services.Interfaces;
+
+using Microsoft.UI.Xaml;
 
 namespace Events_GSS.ViewModels;
 
-// ── Payload for reaction commands ────────────────────────────────────────────
-public record ReactionPayload(AnnouncementItemViewModel Announcement, string Emoji);
+public record AnnouncementReactionPayload(AnnouncementItemViewModel Announcement, string Emoji);
 
 public partial class AnnouncementViewModel : ObservableObject
 {
-    private readonly IAnnouncementService _announcementService;
+    private readonly IAnnouncementService _service;
     private readonly Event _event;
     private readonly int _currentUserId;
 
     public AnnouncementViewModel(
         Event forEvent,
-        IAnnouncementService announcementService,
+        IAnnouncementService service,
         int currentUserId,
         bool isAdmin)
     {
         _event = forEvent;
-        _announcementService = announcementService;
+        _service = service;
         _currentUserId = currentUserId;
         IsEventAdmin = isAdmin;
 
         Announcements = new ObservableCollection<AnnouncementItemViewModel>();
     }
 
-    // ── Collections ──────────────────────────────────────────────────────────
-
     public ObservableCollection<AnnouncementItemViewModel> Announcements { get; }
-
-    // ── Observable state ─────────────────────────────────────────────────────
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotLoading))]
@@ -61,104 +57,114 @@ public partial class AnnouncementViewModel : ObservableObject
     private string _newMessage = string.Empty;
 
     [ObservableProperty]
-    private AnnouncementItemViewModel? _selectedAnnouncement;
-
-    // ── Computed ─────────────────────────────────────────────────────────────
+    [NotifyPropertyChangedFor(nameof(IsEditing))]
+    [NotifyPropertyChangedFor(nameof(CreateButtonText))]
+    private AnnouncementItemViewModel? _editingAnnouncement;
 
     public bool IsNotLoading => !IsLoading;
     public bool HasError => ErrorMessage is not null;
     public Visibility ErrorVisibility => HasError ? Visibility.Visible : Visibility.Collapsed;
-
-    // ── Initialization ───────────────────────────────────────────────────────
-    //
-    //  Explicit method instead of fire-and-forget in the constructor.
-    //  The page calls this in OnNavigatedTo so the caller owns the Task
-    //  and exceptions don't vanish silently.
+    public bool IsEditing => EditingAnnouncement is not null;
+    public string CreateButtonText => IsEditing ? "Save Edit" : "Post";
 
     public async Task InitializeAsync()
     {
         await RunGuardedAsync(LoadAnnouncementsAsync);
     }
 
-    // ── Commands ─────────────────────────────────────────────────────────────
-
     [RelayCommand]
     private async Task LoadAnnouncementsAsync()
     {
-        var list = await _announcementService.GetAnnouncementsAsync(
+        var list = await _service.GetAnnouncementsAsync(
             _event.EventId, _currentUserId);
 
         Announcements.Clear();
         foreach (var a in list)
         {
-            Announcements.Add(new AnnouncementItemViewModel(a));
+            Announcements.Add(new AnnouncementItemViewModel(a, _currentUserId, IsEventAdmin));
         }
 
         UpdateUnreadCount();
     }
 
-    [RelayCommand(CanExecute = nameof(CanCreate))]
-    private async Task CreateAnnouncementAsync()
+    [RelayCommand]
+    private async Task SubmitAnnouncementAsync()
     {
-        await RunGuardedAsync(async () =>
-        {
-            await _announcementService.CreateAnnouncementAsync(
-                NewMessage.Trim(), _event.EventId, _currentUserId);
+        if (string.IsNullOrWhiteSpace(NewMessage)) return;
 
-            NewMessage = string.Empty;
-            await LoadAnnouncementsAsync();
-        });
+        if (IsEditing)
+        {
+            await RunGuardedAsync(async () =>
+            {
+                await _service.UpdateAnnouncementAsync(
+                    EditingAnnouncement!.Id,
+                    NewMessage.Trim(),
+                    _currentUserId,
+                    _event.EventId);
+
+                EditingAnnouncement = null;
+                NewMessage = string.Empty;
+                await LoadAnnouncementsAsync();
+            });
+        }
+        else
+        {
+            await RunGuardedAsync(async () =>
+            {
+                await _service.CreateAnnouncementAsync(
+                    NewMessage.Trim(),
+                    _event.EventId,
+                    _currentUserId);
+
+                NewMessage = string.Empty;
+                await LoadAnnouncementsAsync();
+            });
+        }
     }
 
-    private bool CanCreate() =>
-        !string.IsNullOrWhiteSpace(NewMessage) && IsNotLoading;
-
-    [RelayCommand(CanExecute = nameof(CanModify))]
-    private async Task UpdateAnnouncementAsync()
+    [RelayCommand]
+    private void StartEdit(AnnouncementItemViewModel? item)
     {
-        await RunGuardedAsync(async () =>
-        {
-            await _announcementService.UpdateAnnouncementAsync(
-                SelectedAnnouncement!.Id, NewMessage.Trim(), _currentUserId);
-
-            NewMessage = string.Empty;
-            SelectedAnnouncement = null;
-            await LoadAnnouncementsAsync();
-        });
+        if (item is null) return;
+        EditingAnnouncement = item;
+        NewMessage = item.Message;
     }
 
-    [RelayCommand(CanExecute = nameof(CanModify))]
-    private async Task DeleteAnnouncementAsync()
+    [RelayCommand]
+    private void CancelEdit()
     {
+        EditingAnnouncement = null;
+        NewMessage = string.Empty;
+    }
+
+    [RelayCommand]
+    private async Task DeleteAnnouncementAsync(AnnouncementItemViewModel? item)
+    {
+        if (item is null) return;
+
         await RunGuardedAsync(async () =>
         {
-            await _announcementService.DeleteAnnouncementAsync(
-                SelectedAnnouncement!.Id, _currentUserId);
+            await _service.DeleteAnnouncementAsync(
+                item.Id, _currentUserId, _event.EventId);
 
-            Announcements.Remove(SelectedAnnouncement);
-            SelectedAnnouncement = null;
+            Announcements.Remove(item);
             UpdateUnreadCount();
         });
     }
 
-    private bool CanModify() =>
-        SelectedAnnouncement is not null && IsNotLoading;
-
-    [RelayCommand(CanExecute = nameof(CanPin))]
-    private async Task PinAnnouncementAsync()
+    [RelayCommand]
+    private async Task PinAnnouncementAsync(AnnouncementItemViewModel? item)
     {
+        if (item is null) return;
+
         await RunGuardedAsync(async () =>
         {
-            await _announcementService.PinAnnouncementAsync(
-                SelectedAnnouncement!.Id, _event.EventId, _currentUserId);
+            await _service.PinAnnouncementAsync(
+                item.Id, _event.EventId, _currentUserId);
 
             await LoadAnnouncementsAsync();
         });
     }
-
-    // Only admins can pin, and something must be selected
-    private bool CanPin() =>
-        SelectedAnnouncement is not null && IsNotLoading && IsEventAdmin;
 
     [RelayCommand]
     private async Task ToggleExpandAsync(AnnouncementItemViewModel? item)
@@ -169,54 +175,42 @@ public partial class AnnouncementViewModel : ObservableObject
 
         if (item.IsExpanded && !item.IsRead)
         {
-            await RunGuardedAsync(async () =>
+            try
             {
-                await _announcementService.MarkAsReadAsync(item.Id, _currentUserId);
+                await _service.MarkAsReadAsync(item.Id, _currentUserId);
                 item.IsRead = true;
                 UpdateUnreadCount();
-            });
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"Mark as read failed: {ex.Message}");
+            }
         }
     }
 
-    // ── Reactions ────────────────────────────────────────────────────────────
-    //
-    //  Single-object parameter so the source-generated IAsyncRelayCommand<T>
-    //  is easy to bind from XAML or call from code-behind.
-
     [RelayCommand]
-    private async Task AddReactionAsync(ReactionPayload? payload)
+    private async Task ToggleReactionAsync(AnnouncementReactionPayload? payload)
     {
         if (payload is null) return;
 
         await RunGuardedAsync(async () =>
         {
-            await _announcementService.ReactAsync(
-                payload.Announcement.Id, _currentUserId, payload.Emoji);
+            var currentEmoji = payload.Announcement.CurrentUserEmoji;
+
+            if (currentEmoji == payload.Emoji)
+                await _service.RemoveReactionAsync(payload.Announcement.Id, _currentUserId);
+            else
+                await _service.ReactAsync(payload.Announcement.Id, _currentUserId, payload.Emoji);
 
             await LoadAnnouncementsAsync();
         });
     }
 
-    [RelayCommand]
-    private async Task RemoveReactionAsync(AnnouncementItemViewModel? item)
+    private void UpdateUnreadCount()
     {
-        if (item is null) return;
-
-        await RunGuardedAsync(async () =>
-        {
-            await _announcementService.RemoveReactionAsync(item.Id, _currentUserId);
-
-            await LoadAnnouncementsAsync();
-        });
+        UnreadCount = Announcements.Count(a => !a.IsRead);
     }
 
-    // ── Helpers ──────────────────────────────────────────────────────────────
-
-    private void UpdateUnreadCount() =>
-        UnreadCount = Announcements.Count(a => !a.IsRead);
-
-    // Centralises the loading-flag + error-handling boilerplate so every
-    // command body stays focused on its own logic.
     private async Task RunGuardedAsync(Func<Task> action)
     {
         IsLoading = true;
@@ -227,10 +221,13 @@ public partial class AnnouncementViewModel : ObservableObject
         }
         catch (UnauthorizedAccessException)
         {
-            ErrorMessage = "You must join this event to view announcements.";
+            ErrorMessage = "You don't have permission for this action.";
         }
         catch (Exception ex)
         {
+            System.Diagnostics.Debug.WriteLine("========== FULL EXCEPTION ==========");
+            System.Diagnostics.Debug.WriteLine(ex.ToString());
+            System.Diagnostics.Debug.WriteLine("=====================================");
             ErrorMessage = ex.Message;
         }
         finally
@@ -239,17 +236,11 @@ public partial class AnnouncementViewModel : ObservableObject
         }
     }
 
-    // Whenever IsLoading or SelectedAnnouncement change, poke every
-    // command whose CanExecute depends on them.
     partial void OnIsLoadingChanged(bool value) => NotifyCommandsChanged();
-    partial void OnSelectedAnnouncementChanged(AnnouncementItemViewModel? value) => NotifyCommandsChanged();
     partial void OnNewMessageChanged(string value) => NotifyCommandsChanged();
 
     private void NotifyCommandsChanged()
     {
-        CreateAnnouncementCommand.NotifyCanExecuteChanged();
-        UpdateAnnouncementCommand.NotifyCanExecuteChanged();
-        DeleteAnnouncementCommand.NotifyCanExecuteChanged();
-        PinAnnouncementCommand.NotifyCanExecuteChanged();
+        SubmitAnnouncementCommand.NotifyCanExecuteChanged();
     }
 }

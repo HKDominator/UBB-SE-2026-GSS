@@ -14,8 +14,7 @@
     </Window.SystemBackdrop>
 
     <Grid>
-        <views:DiscussionControl
-            ViewModel = "{x:Bind DiscussionViewModel}" />
+        <views:AnnouncementControl ViewModel="{x:Bind AnnouncementViewModel}" />
 
     </Grid>
 </Window>
