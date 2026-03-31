@@ -29,7 +29,7 @@ INSERT INTO Users (Id, Name, Email, PasswordHash, ReputationPoints)
 VALUES
 (4, 'Dan Gheorghe', '[dan@test.com](mailto:dan@test.com)', 'blah', 510),
 (5, 'Elena Moldovan', '[elena@test.com](mailto:elena@test.com)', 'blah', 0),
-(6, 'Florin Stanescu', '[florin@test.com](mailto:florin@test.com)', 'blah', -50)
+(6, 'Florin Stanescu', '[florin@test.com](mailto:florin@test.com)', 'blah', -50);
 
 SET IDENTITY_INSERT Users OFF;
 
@@ -52,8 +52,9 @@ INSERT INTO Events (
     SlowModeSeconds
     )
 VALUES 
-(1, 'Test Event Cluj', 'RO', '2026-04-01 10:00', '2026-04-01 20:00', 1, 'dhfs', 20, 'sudb', 1, 1, 1);
-
+(1, 'Test Event Cluj', 'RO', '2026-04-01 10:00', '2026-04-01 20:00', 1, 'dhfs', 20, 'sudb', 1, 1, 1),
+(2, 'Book Meet', 'Cluj-Napoca', '2025-09-15 10:00', '2025-09-15 14:00', 1, 'A meeting about books', 10, 'bannerpath',  5, 1, NULL),
+(3, 'Art Club', 'Bucharest', '2026-03-31 10:00', '2026-04-01 15:00', 1, 'A meeting about art', 10, 'bannerpath',  5, 1, NULL);
 
 SET IDENTITY_INSERT Events OFF;
 
