@@ -14,8 +14,10 @@ namespace Events_GSS.Data.Services.Interfaces {
         Task ToggleLikeAsync(Memory memory, User user);
         Task<int> GetLikesCountAsync(int memoryId);
         public bool IsOwnMemory(Memory memory, User currentUser);
-            
+        public bool CanDelete(Memory memory, User currentUser);
+        public bool CanLike(Memory memory, User currentUser);
+    }
 
-        }
 
 }
+

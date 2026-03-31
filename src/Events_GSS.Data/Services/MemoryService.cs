@@ -117,6 +117,17 @@ namespace Events_GSS.Data.Services
         {
             return memory.Author.UserId == currentUser.UserId;
         }
+        public bool CanDelete(Memory memory, User currentUser)
+        {
+            bool isAuthor = memory.Author?.UserId == currentUser.UserId;
+            bool isEventAdmin = memory.Event?.Admin?.UserId == currentUser.UserId;
+            return isAuthor || isEventAdmin;
+        }
+
+        public bool CanLike(Memory memory, User currentUser)
+        {
+            return memory.Author?.UserId != currentUser.UserId;
+        }
     }
 }
 
