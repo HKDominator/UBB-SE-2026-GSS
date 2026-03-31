@@ -136,7 +136,7 @@ namespace Events_GSS.Data.Repositories
         {
             string sql = @"
         SELECT m.MemoryId, m.PhotoPath, m.Text, m.CreatedAt,
-               e.EventId, e.Name as EventName, e.Admin as CreatedById,
+               e.EventId, e.Name as EventName, e.AdminId as CreatedById,
                u.Id as AuthorId, u.Name as AuthorName, u.Email as AuthorEmail
         FROM Memories m
         INNER JOIN Events e ON e.EventId = m.EventId

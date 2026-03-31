@@ -1,42 +1,42 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-
-using Events_GSS.Data.Models;
-using Events_GSS.Views;
+using Events_GSS.Data.Database;
 
 using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
 
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+using Events_GSS.Data.Models;
+using Events_GSS.Data.Repositories;
+using Events_GSS.Data.Repositories.Interfaces;
+using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.Data.Services;
+using Events_GSS.ViewModels;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
-namespace Events_GSS
+namespace Events_GSS;
+
+public sealed partial class MainWindow : Window
 {
-    /// <summary>
-    /// An empty window that can be used on its own or navigated to within a Frame.
-    /// </summary>
-    public sealed partial class MainWindow : Window
+ //   public QuestAdminViewModel QuestViewModel { get; }
+    public MemoryViewModel MemoriesViewModel { get; }
+
+    public MainWindow()
     {
-        private readonly Event _currentEvent;
-        private readonly User _currentUser;
-        public MainWindow()
+        InitializeComponent();
+
+     //   IQuestService qs = App.Services.GetRequiredService<IQuestService>();
+        IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
+
+
+        // TODO: PlaceHolder for event data, replace when navigation is implemented
+        var currentEvent = new Event { EventId = 1 };
+        var currentUser = new User { UserId = 1 };
+
+     //   QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
+        MemoriesViewModel = new MemoryViewModel(memoryService);
+        this.Activated += async (s, e) =>
         {
-            _currentEvent = new Event { EventId = 1 };
-            _currentUser = new User { UserId = 1 };
-            InitializeComponent();
-            _ = MemoriesView.LoadAsync(_currentEvent, _currentUser);
-        }
+            await MemoriesView.LoadAsync(currentEvent, currentUser);
+        };
 
     }
 }

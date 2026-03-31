@@ -15,6 +15,7 @@ namespace Events_GSS.Data.Services {
         Task AddAsync(Event eve, User user, string? photoPath, string? text);
         Task DeleteAsync(Memory memory, User user);
         Task ToggleLikeAsync(Memory memory, User user);
+        Task<int> GetLikesCountAsync(int memoryId);
         public bool IsOwnMemory(Memory memory, User currentUser);
             
 

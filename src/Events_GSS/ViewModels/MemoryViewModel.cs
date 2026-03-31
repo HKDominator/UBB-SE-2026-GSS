@@ -1,36 +1,47 @@
+using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Windows.Input;
+using System.Threading.Tasks;
 
 using CommunityToolkit.Mvvm.Input;
 
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Services;
+
 namespace Events_GSS.ViewModels
 {
-
     public class MemoryViewModel : INotifyPropertyChanged
     {
         private readonly IMemoryService _memoryService;
-        public ICommand SortAscendingCommand { get; }
-        public ICommand SortDescendingCommand { get; }
 
         private Event _event = null!;
         private User _currentUser = null!;
 
-        private ObservableCollection<Memory> _memories = new();
+        private ObservableCollection<MemoryItemViewModel> _memories = new();
         private ObservableCollection<string> _galleryPhotos = new();
 
         private bool _showOnlyMine;
         private bool _isLoading;
         private string? _errorMessage;
-        private bool? _sortAscending = false;
+        private bool _sortAscending = false;
+        private bool _isGalleryOpen = false;
 
-        public ObservableCollection<Memory> Memories
+        // ── Commands ──────────────────────────────────────────────────
+     
+
+        public IAsyncRelayCommand SortAscendingCommand { get; }
+        public IAsyncRelayCommand SortDescendingCommand { get; }
+        public IAsyncRelayCommand OpenGalleryCommand { get; }
+        public IRelayCommand CloseGalleryCommand { get; }
+
+        // ── Collections ───────────────────────────────────────────────
+
+        public ObservableCollection<MemoryItemViewModel> Memories
         {
             get => _memories;
-            private set { _memories = value; OnPropertyChanged(); }
+            private set { _memories = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsEmpty)); }
         }
 
         public ObservableCollection<string> GalleryPhotos
@@ -39,43 +50,50 @@ namespace Events_GSS.ViewModels
             private set { _galleryPhotos = value; OnPropertyChanged(); }
         }
 
+        // ── State booleans ────────────────────────────────────────────
+
         public bool IsLoading
         {
             get => _isLoading;
-            private set { _isLoading = value; OnPropertyChanged(); }
+            private set { _isLoading = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsEmpty)); }
         }
 
         public string? ErrorMessage
         {
             get => _errorMessage;
-            private set
-            {
-                _errorMessage = value;
-                OnPropertyChanged();
-                OnPropertyChanged(nameof(HasError));
-            }
+            private set { _errorMessage = value; OnPropertyChanged(); OnPropertyChanged(nameof(HasError)); }
         }
 
         public bool HasError => !string.IsNullOrEmpty(_errorMessage);
+        public bool IsEmpty => !_isLoading && _memories.Count == 0 && !_isGalleryOpen;
+        public bool IsMemoryListVisible => !_isGalleryOpen;
+        public bool IsGalleryVisible => _isGalleryOpen;
 
         public bool ShowOnlyMine
         {
             get => _showOnlyMine;
             set
             {
+                if (_showOnlyMine == value) return;
                 _showOnlyMine = value;
                 OnPropertyChanged();
                 _ = LoadMemoriesAsync();
             }
         }
 
+        // ── Constructor ───────────────────────────────────────────────
+
         public MemoryViewModel(IMemoryService memoryService)
         {
             _memoryService = memoryService;
 
-            SortAscendingCommand = new RelayCommand(async () => await SortAsync(ascending: true));
-            SortDescendingCommand = new RelayCommand(async () => await SortAsync(ascending: false));
+            SortAscendingCommand = new AsyncRelayCommand(() => SortInternalAsync(ascending: true));
+            SortDescendingCommand = new AsyncRelayCommand(() => SortInternalAsync(ascending: false));
+            OpenGalleryCommand = new AsyncRelayCommand(OpenGalleryInternalAsync);
+            CloseGalleryCommand = new RelayCommand(CloseGalleryInternal);
         }
+
+        // ── Init ──────────────────────────────────────────────────────
 
         public async Task InitializeAsync(Event currentEvent, User currentUser)
         {
@@ -84,15 +102,7 @@ namespace Events_GSS.ViewModels
             await LoadMemoriesAsync();
         }
 
-        public async Task OpenGalleryAsync()
-        {
-            try
-            {
-                var photos = await _memoryService.GetOnlyPhotosAsync(_event);
-                GalleryPhotos = new ObservableCollection<string>(photos);
-            }
-            catch (Exception ex) { ErrorMessage = $"Could not load gallery: {ex.Message}"; }
-        }
+        // ── Public ops 
 
         public async Task AddMemoryAsync(string? photoPath, string? text)
         {
@@ -107,40 +117,65 @@ namespace Events_GSS.ViewModels
             catch (Exception ex) { ErrorMessage = $"Could not add memory: {ex.Message}"; }
         }
 
-        public async Task DeleteMemoryAsync(Memory memory)
+        public async Task DeleteMemoryAsync(MemoryItemViewModel item)
         {
             ErrorMessage = null;
             try
             {
-                await _memoryService.DeleteAsync(memory, _currentUser);
+                await _memoryService.DeleteAsync(item.Memory, _currentUser);
                 await LoadMemoriesAsync();
             }
             catch (UnauthorizedAccessException ex) { ErrorMessage = ex.Message; }
             catch (Exception ex) { ErrorMessage = $"Could not delete memory: {ex.Message}"; }
         }
 
-        public async Task ToggleLikeAsync(Memory memory)
+        public async Task ToggleLikeAsync(MemoryItemViewModel item)
         {
             ErrorMessage = null;
             try
             {
-                await _memoryService.ToggleLikeAsync(memory, _currentUser);
+                await _memoryService.ToggleLikeAsync(item.Memory, _currentUser);
                 await LoadMemoriesAsync();
             }
             catch (InvalidOperationException ex) { ErrorMessage = ex.Message; }
             catch (Exception ex) { ErrorMessage = $"Could not toggle like: {ex.Message}"; }
         }
 
-        public void ResetOnlyMineWithoutReload()
+        // ResetSortAndFilter e apelat din View cand user-ul apasa Sort
+        // dupa care View apeleaza SortAscendingCommand / SortDescendingCommand
+        public void ResetSortAndFilter()
         {
             _showOnlyMine = false;
-            _sortAscending = false; // reset la default desc
             OnPropertyChanged(nameof(ShowOnlyMine));
         }
 
-        public bool IsOwnMemory(Memory memory)
+        // ── Private ───────────────────────────────────────────────────
+
+        private async Task SortInternalAsync(bool ascending)
         {
-            return _memoryService.IsOwnMemory(memory, _currentUser);
+            _sortAscending = ascending;
+            _showOnlyMine = false;
+            OnPropertyChanged(nameof(ShowOnlyMine));
+            await LoadMemoriesAsync();
+        }
+
+        private async Task OpenGalleryInternalAsync()
+        {
+            ErrorMessage = null;
+            try
+            {
+                var photos = await _memoryService.GetOnlyPhotosAsync(_event);
+                GalleryPhotos = new ObservableCollection<string>(photos);
+                _isGalleryOpen = true;
+                NotifyVisibilityChanged();
+            }
+            catch (Exception ex) { ErrorMessage = $"Could not load gallery: {ex.Message}"; }
+        }
+
+        private void CloseGalleryInternal()
+        {
+            _isGalleryOpen = false;
+            NotifyVisibilityChanged();
         }
 
         private async Task LoadMemoriesAsync()
@@ -154,18 +189,27 @@ namespace Events_GSS.ViewModels
                 if (_showOnlyMine)
                     list = await _memoryService.FilterByMyMemoriesAsync(_event, _currentUser);
                 else
-                    list = await _memoryService.OrderByDateAsync(_event, _currentUser, _sortAscending ?? false);
+                    list = await _memoryService.OrderByDateAsync(_event, _currentUser, _sortAscending);
 
-                Memories = new ObservableCollection<Memory>(list);
+                var items = new ObservableCollection<MemoryItemViewModel>();
+                foreach (var m in list)
+                    items.Add(new MemoryItemViewModel(m, _currentUser));
+
+                Memories = items;
             }
             catch (Exception ex) { ErrorMessage = $"Could not load memories: {ex.Message}"; }
-            finally { IsLoading = false; }
+            finally
+            {
+                IsLoading = false;
+                OnPropertyChanged(nameof(IsEmpty));
+            }
         }
 
-        private async Task SortAsync(bool ascending)
+        private void NotifyVisibilityChanged()
         {
-            _sortAscending = ascending;
-            await LoadMemoriesAsync();
+            OnPropertyChanged(nameof(IsGalleryVisible));
+            OnPropertyChanged(nameof(IsMemoryListVisible));
+            OnPropertyChanged(nameof(IsEmpty));
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

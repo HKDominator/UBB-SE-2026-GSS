@@ -90,6 +90,11 @@ namespace Events_GSS.Data.Services
 
             await _memoryRepo.DeleteAsync(memory.MemoryId);
         }
+        public async Task<int> GetLikesCountAsync(int memoryId)
+        {
+            return await _memoryRepo.GetLikesCountAsync(memoryId);
+        }
+
 
         public async Task ToggleLikeAsync(Memory memory, User currentUser)
         {
