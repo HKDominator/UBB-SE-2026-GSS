@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 using Events_GSS.Data.Models;
@@ -104,8 +105,23 @@ public class DiscussionService : IDiscussionService
 
         await _repo.AddAsync(message);
 
-        // TODO: Parse @mentions from text and call notification service
-        // per unique mentioned user (REQ-DIS-06).
+        if( !string.IsNullOrWhiteSpace(text))
+        {
+            var mentionedNames = ParseMentions(text);
+            if(mentionedNames.Count > 0)
+            {
+                var participants = await _repo.GetEventParticipantsAsync(eventId);
+                var mentionedUsers = participants
+                    .Where(p => mentionedNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase))
+                    .Where(p => p.UserId != userId) // Don't notify self-mentions
+                    .GroupBy(p => p.UserId)
+                    .Select(g => g.First())
+                    .ToList();
+                // TODO: Call notification service for each mentionedUser
+                // e.g.: foreach (var u in mentionedUsers)
+                //           await _notificationService.SendAsync(u.UserId, "Mention", $"You were mentioned by ...");
+            }
+        }
     }
 
     public async Task DeleteMessageAsync(int messageId, int userId, int eventId)
@@ -161,6 +177,45 @@ public class DiscussionService : IDiscussionService
     {
         await EnsureAdminAsync(eventId, adminUserId);
         await _repo.UnmuteAsync(eventId, targetUserId);
+    }
+
+    // ── Slow Mode ───────────────────────────────────────────────────────────────
+
+    public async Task SetSlowModeAsync(int eventId, int? seconds, int adminUserId)
+    {
+        await EnsureAdminAsync(eventId, adminUserId);
+
+        if(seconds.HasValue && seconds.Value <= 0)
+            throw new ArgumentException("Slow mode seconds must be positive number of seconds");
+        await _repo.SetSlowModeAsync(eventId, seconds);
+    }
+
+    public async Task<int?> GetSlowModeSecondsAsync(int eventId)
+    {
+        var eventCheck = await GetEventOrThrowAsync(eventId);
+        return eventCheck.SlowModeSeconds;
+    }
+
+    // ── Participants ───────────────────────────────────────────────────────────
+
+    public async Task<List<User>> GetEventParticipantsAsync(int eventId)
+    {
+        return await _repo.GetEventParticipantsAsync(eventId);
+    }
+
+    // ── Mention parsing (simple implementation) ────────────────────────────────
+
+    /// <summary>
+    /// Extracts unique @mentioned names from message text.
+    /// Supports "@Name" and "@First Last" (two words after @).
+    /// </summary>
+    public static List<string> ParseMentions(string text)
+    {
+        var matches = Regex.Matches(text, @"@(\w+(?:\s+\w+)?)");
+        return matches
+            .Select(m => m.Groups[1].Value.Trim())
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .ToList();
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────

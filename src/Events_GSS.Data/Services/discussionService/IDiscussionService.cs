@@ -20,4 +20,11 @@ public interface IDiscussionService
     // ── Mutes ─────────────────────────────────────────────────
     Task MuteUserAsync(int eventId, int targetUserId, DateTime? muteUntil, int adminUserId);
     Task UnmuteUserAsync(int eventId, int targetUserId, int adminUserId);
+
+    // ── Slow Mode ───────────────────────────────────────────────
+    Task SetSlowModeAsync(int eventId, int? seconds, int AdminUserId);
+    Task<int?> GetSlowModeSecondsAsync(int eventId);
+
+    // ── Participants ─────────────────────────────────────────────────────
+    Task<List<User>> GetEventParticipantsAsync(int eventId);
 }

@@ -424,7 +424,7 @@ public class DiscussionRepository : IDiscussionRepository
         await command.ExecuteNonQueryAsync();
     }
 
-    public async Task<List<User>> GetsEventParticipantsAsync(int eventId)
+    public async Task<List<User>> GetEventParticipantsAsync(int eventId)
     {
         var users = new List<User>();
         using var conn = _connectionFactory.CreateConnection();
