@@ -39,7 +39,39 @@ namespace Events_GSS.Data.Repositories.notificationRepository
         }
         public async Task<List<Notification>> GetByUserIdAsync(int userId)
         {
-            return null;
+            const string query = @"
+            SELECT n.Id, n.Title, n.Description, n.CreatedAt, u.Id AS UserId, u.Name AS UserName, u.ReputationPoints
+            FROM Notifications n
+            INNER JOIN Users u ON n.UserId = u.Id
+            WHERE n.UserId = @UserId";
+
+            using var connection = _factory.CreateConnection();
+            await connection.OpenAsync();
+
+            using var command = new SqlCommand(query, connection);
+            command.Parameters.AddWithValue("@UserId", userId);
+
+            using var reader = await command.ExecuteReaderAsync();
+            var results = new List<Notification>();
+
+            while (await reader.ReadAsync())
+            {
+                results.Add(new Notification
+                {
+                    Id = (int)reader["Id"],
+                    Title = (string)reader["Title"],
+                    Description = (string)reader["Description"],
+                    CreatedAt = (DateTime)reader["CreatedAt"],
+                    User = new User
+                    {
+                        UserId = (int)reader["UserId"],
+                        Name = (string)reader["UserName"],
+                        ReputationPoints = (int)reader["ReputationPoints"]
+                    }
+                });
+            }
+
+            return results;
         }
 
         public async Task DeleteAsync(int notificationId)
