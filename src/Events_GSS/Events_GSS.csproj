@@ -16,8 +16,11 @@
   <ItemGroup>
     <None Remove="ViewModels\AnnouncementControl.xaml" />
     <None Remove="Views\AnnouncementControl.xaml" />
+    <None Remove="Views\CreateEventPage.xaml" />
     <None Remove="Views\DiscussionControl.xaml" />
     <None Remove="Views\AttendedEventView.xaml" />
+    <None Remove="Views\EventDetailPage.xaml" />
+    <None Remove="Views\EventListingPage.xaml" />
     <None Remove="Views\QuestAdminControl.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -28,6 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="Views\CreateEventStep2View.xaml" />
+    <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -70,6 +74,18 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\CreateEventPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\EventListingPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\EventDetailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\AnnouncementControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
