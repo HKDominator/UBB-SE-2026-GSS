@@ -38,6 +38,12 @@ namespace Events_GSS.Views
                 await ViewModel.LeaveAsync(ae);
         }
 
+        private async void FriendBox_Chosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
+        {
+            if(args.SelectedItem is User friend)
+                await ViewModel.LoadCommonEventsAsync(friend);
+        }
+
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);

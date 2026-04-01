@@ -66,14 +66,7 @@
                 MinWidth="160">
             </ComboBox>
 
-            <AutoSuggestBox
-                Grid.Column="3"
-                PlaceholderText="Friend"
-                MinWidth="240"
-            >
-            </AutoSuggestBox>
-
-                <Button
+            <Button
                 Grid.Column="4"
                 Content="Clear"
                 Command="{Binding ClearFiltersCommand}" />
@@ -266,6 +259,18 @@
                     </ListView>
                 </TabViewItem>
 
+                <TabViewItem Header="Common Events">
+                    <AutoSuggestBox
+                        Grid.Column="3"
+                        Text="{Binding FriendSearchQuery, Mode=TwoWay}"
+                        ItemsSource="{Binding FilteredD}"
+                        PlaceholderText="Friend"
+                        SuggestionChosen="FriendBox_Chosen"
+                        MinWidth="240"
+                    >
+                    </AutoSuggestBox>
+                </TabViewItem>
+                
             </TabView>
         </Grid>
     </Grid>

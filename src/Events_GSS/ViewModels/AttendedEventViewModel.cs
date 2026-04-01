@@ -187,8 +187,10 @@ namespace Events_GSS.ViewModels
                     .ToList();
 
                 AvailableCategories = new ObservableCollection<Category>(categories);
+                FilteredFriends = new ObservableCollection<User>(_userService.GetFriends(CurrentUser.UserId));
 
                 ApplyFiltersAndSort();
+
             }
             catch (Exception ex)
             {
