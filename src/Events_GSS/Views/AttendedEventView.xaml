@@ -141,9 +141,8 @@
                                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="4">
                                             <Button
                                                 Content="{Binding IsFavourite, Converter={StaticResource FavouriteButtonTextConverter}}"
-                                                CommandParameter="{Binding}"
-                                                Command="{Binding DataContext.SetFavouriteCommand,
-                                                    ElementName=Root}"
+                                                Tag="{Binding}"
+                                                Click="FavouriteButton_Click"
                                                 Style="{StaticResource DefaultButtonStyle}" />
                                             <Button
                                                 Content="Archive"

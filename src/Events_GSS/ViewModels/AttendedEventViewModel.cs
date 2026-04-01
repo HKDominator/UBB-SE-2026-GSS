@@ -280,7 +280,7 @@ namespace Events_GSS.ViewModels
             }
         }
 
-        private async Task SetFavouriteAsync(object? parameter)
+        public async Task SetFavouriteAsync(object? parameter)
         {
             if (parameter is not AttendedEvent ae) return;
 
