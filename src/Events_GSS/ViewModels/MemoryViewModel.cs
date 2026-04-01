@@ -28,15 +28,11 @@ namespace Events_GSS.ViewModels
         private bool _sortAscending = false;
         private bool _isGalleryOpen = false;
 
-        // ── Commands ──────────────────────────────────────────────────
-     
-
         public IAsyncRelayCommand SortAscendingCommand { get; }
         public IAsyncRelayCommand SortDescendingCommand { get; }
         public IAsyncRelayCommand OpenGalleryCommand { get; }
         public IRelayCommand CloseGalleryCommand { get; }
 
-        // ── Collections ───────────────────────────────────────────────
 
         public ObservableCollection<MemoryItemViewModel> Memories
         {
@@ -50,12 +46,16 @@ namespace Events_GSS.ViewModels
             private set { _galleryPhotos = value; OnPropertyChanged(); }
         }
 
-        // ── State booleans ────────────────────────────────────────────
 
         public bool IsLoading
         {
             get => _isLoading;
-            private set { _isLoading = value; OnPropertyChanged(); OnPropertyChanged(nameof(IsEmpty)); }
+            private set
+            {
+                _isLoading = value;
+                OnPropertyChanged();
+                OnPropertyChanged(nameof(IsEmpty));
+            }
         }
 
         public string? ErrorMessage
@@ -69,6 +69,12 @@ namespace Events_GSS.ViewModels
         public bool IsMemoryListVisible => !_isGalleryOpen;
         public bool IsGalleryVisible => _isGalleryOpen;
 
+        public bool IsShowOnlyMineChecked
+        {
+            get => _showOnlyMine;
+            private set { _showOnlyMine = value; OnPropertyChanged(); }
+        }
+
         public bool ShowOnlyMine
         {
             get => _showOnlyMine;
@@ -81,8 +87,6 @@ namespace Events_GSS.ViewModels
             }
         }
 
-        // ── Constructor ───────────────────────────────────────────────
-
         public MemoryViewModel(IMemoryService memoryService)
         {
             _memoryService = memoryService;
@@ -93,7 +97,7 @@ namespace Events_GSS.ViewModels
             CloseGalleryCommand = new RelayCommand(CloseGalleryInternal);
         }
 
-        // ── Init ──────────────────────────────────────────────────────
+
 
         public async Task InitializeAsync(Event currentEvent, User currentUser)
         {
@@ -102,7 +106,6 @@ namespace Events_GSS.ViewModels
             await LoadMemoriesAsync();
         }
 
-        // ── Public ops 
 
         public async Task AddMemoryAsync(string? photoPath, string? text)
         {
@@ -141,21 +144,19 @@ namespace Events_GSS.ViewModels
             catch (Exception ex) { ErrorMessage = $"Could not toggle like: {ex.Message}"; }
         }
 
-        // ResetSortAndFilter e apelat din View cand user-ul apasa Sort
-        // dupa care View apeleaza SortAscendingCommand / SortDescendingCommand
+
         public void ResetSortAndFilter()
         {
             _showOnlyMine = false;
             OnPropertyChanged(nameof(ShowOnlyMine));
         }
 
-        // ── Private ───────────────────────────────────────────────────
-
         private async Task SortInternalAsync(bool ascending)
         {
             _sortAscending = ascending;
             _showOnlyMine = false;
             OnPropertyChanged(nameof(ShowOnlyMine));
+            IsShowOnlyMineChecked = false;
             await LoadMemoriesAsync();
         }
 
@@ -193,7 +194,11 @@ namespace Events_GSS.ViewModels
 
                 var items = new ObservableCollection<MemoryItemViewModel>();
                 foreach (var m in list)
-                    items.Add(new MemoryItemViewModel(m, _currentUser));
+                    items.Add(new MemoryItemViewModel(
+                        m,
+                        canDelete: _memoryService.CanDelete(m, _currentUser),
+                        canLike: _memoryService.CanLike(m, _currentUser)
+                    ));
 
                 Memories = items;
             }
