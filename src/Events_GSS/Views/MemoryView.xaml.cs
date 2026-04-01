@@ -24,7 +24,7 @@ namespace Events_GSS.Views
             await ViewModel.InitializeAsync(ev, user);
         }
 
-        // ── Filter ────────────────────────────────────────────────────
+      
 
         private void MyMemoriesToggle_Click(object sender, RoutedEventArgs e)
         {
@@ -47,8 +47,6 @@ namespace Events_GSS.Views
             await ViewModel.ToggleLikeAsync(item);
         }
 
-        // ── Delete ────────────────────────────────────────────────────
-
         private async void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
             if (sender is not Button btn || btn.DataContext is not MemoryItemViewModel item)
@@ -67,8 +65,6 @@ namespace Events_GSS.Views
             if (result == ContentDialogResult.Primary)
                 await ViewModel.DeleteMemoryAsync(item);
         }
-
-        // ── Add ───────────────────────────────────────────────────────
 
         private async void AddMemoryButton_Click(object sender, RoutedEventArgs e)
         {
