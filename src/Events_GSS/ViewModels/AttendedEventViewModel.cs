@@ -200,6 +200,12 @@ namespace Events_GSS.ViewModels
             }
         }
 
+        public async Task LoadCommonEventsAsync(User friend)
+        {
+            var common_events = await _attendedEventService.GetCommonEventsAsync(CurrentUser.UserId, friend.UserId);
+            CommonEvents = new ObservableCollection<AttendedEvent>(common_events);
+        }
+
         // ─── Filtering & sorting ──────────────────────────────────────────
 
         // Central method — called whenever search, category, or sort changes.
