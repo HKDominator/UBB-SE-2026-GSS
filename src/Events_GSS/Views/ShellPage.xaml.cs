@@ -19,16 +19,13 @@ public sealed partial class ShellPage : Page
 
         _nav = App.Services.GetRequiredService<INavigationService>();
 
-        // Give the NavigationService access to the Frame
         if (_nav is NavigationService concreteNav)
         {
             concreteNav.SetFrame(ContentFrame);
         }
 
-        // Navigate to the default page
         _nav.NavigateTo(PageKeys.EventListing);
 
-        // Select the first menu item visually
         NavView.SelectedItem = NavView.MenuItems[0];
     }
 

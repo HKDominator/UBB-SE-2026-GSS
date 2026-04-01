@@ -30,34 +30,28 @@ public sealed partial class EventDetailPage : Page
 
         if (e.Parameter is not Event ev) return;
 
-        // ── Header ───────────────────────────────────────────
         EventNameText.Text = ev.Name;
         EventInfoText.Text = $"{ev.StartDateTime:MMM dd, yyyy HH:mm} • {ev.Location}";
 
-        // ── Current user ─────────────────────────────────────
         var userService = App.Services.GetRequiredService<IUserService>();
         var currentUser = userService.GetCurrentUser();
         int userId = currentUser.UserId;
         bool isAdmin = ev.Admin?.UserId == userId;
 
-        // ── Announcements tab ────────────────────────────────
         var annService = App.Services.GetRequiredService<IAnnouncementService>();
         var annVm = new AnnouncementViewModel(ev, annService, userId, isAdmin);
         AnnouncementTab.ViewModel = annVm;
         _ = annVm.InitializeAsync();
 
-        // ── Discussions tab ──────────────────────────────────
         var discService = App.Services.GetRequiredService<IDiscussionService>();
         var discVm = new DiscussionViewModel(ev, discService, userId, isAdmin);
         DiscussionTab.ViewModel = discVm;
         _ = discVm.InitializeAsync();
 
-        // ── Quests tab ───────────────────────────────────────
         var questService = App.Services.GetRequiredService<IQuestService>();
         var questVm = new QuestAdminViewModel(ev, questService);
         QuestTab.ViewModel = questVm;
 
-        // ── Memories tab ─────────────────────────────────────
         var memService = App.Services.GetRequiredService<IMemoryService>();
         var memVm = new MemoryViewModel(memService);
         MemoryTab.ViewModel = memVm;

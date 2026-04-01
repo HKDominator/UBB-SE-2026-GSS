@@ -30,7 +30,6 @@
             </NavigationViewItem>
         </NavigationView.MenuItems>
 
-        <!-- This Frame hosts all pages -->
         <Frame x:Name="ContentFrame" />
 
     </NavigationView>

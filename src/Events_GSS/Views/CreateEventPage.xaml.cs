@@ -18,7 +18,6 @@ public sealed partial class CreateEventPage : Page
     {
         base.OnNavigatedTo(e);
 
-        // When the create event flow completes or cancels, go back
         CreateEventView.ViewModel.CloseRequested += _ =>
         {
             var nav = App.Services.GetRequiredService<INavigationService>();

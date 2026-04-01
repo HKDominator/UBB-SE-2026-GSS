@@ -45,7 +45,6 @@ public partial class App : Application
         string connectionString = configuration.GetConnectionString("DefaultConnection")!;
         services.AddSingleton(new SqlConnectionFactory(connectionString));
 
-        // ── Repositories ─────────────────────────────────────
         services.AddTransient<IEventRepository, EventRepository>();
         services.AddTransient<ICategoryRepository, CategoryRepository>();
         services.AddTransient<IQuestRepository, QuestRepository>();
@@ -54,7 +53,6 @@ public partial class App : Application
         services.AddTransient<IMemoryRepository, MemoryRepository>();
         services.AddTransient<IAttendedEventRepository, AttendedEventRepository>();
 
-        // ── Services ─────────────────────────────────────────
         services.AddTransient<IEventService, EventService>();
         services.AddTransient<ICategoryServices, CategoryServices>();
         services.AddTransient<IQuestService, QuestService>();
@@ -64,7 +62,6 @@ public partial class App : Application
         services.AddTransient<IAttendedEventService, AttendedEventService>();
         services.AddTransient<IUserService, MockUserService>();
 
-        // ── Navigation ───────────────────────────────────────
         var navService = new NavigationService();
         navService.RegisterPage(PageKeys.EventListing, typeof(EventListingPage));
         navService.RegisterPage(PageKeys.MyEvents, typeof(AttendedEventView));
