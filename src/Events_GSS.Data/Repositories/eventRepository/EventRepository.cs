@@ -22,11 +22,11 @@ public class EventRepository: IEventRepository
 
         var command = new SqlCommand(@"
             SELECT E.*, C.CategoryId as CatId, C.Title as CategoryTitle,
-                u.UserId as UserId, u.Name as UserName,
+                u.Id as UserId, u.Name as UserName,
                 (SELECT COUNT(*) FROM AttendedEvents AE WHERE AE.EventId = E.EventId) AS EnrolledCount
             FROM Events E
             LEFT JOIN Categories C ON E.CategoryId = C.CategoryId
-            LEFT JOIN Users u ON E.AdminId = u.UserId
+            LEFT JOIN Users u ON E.AdminId = u.Id
             WHERE E.IsPublic = 1 AND E.EndDateTime > GETUTCDATE()
             ORDER BY E.StartDateTime ASC", connection);
         
@@ -46,11 +46,11 @@ public class EventRepository: IEventRepository
 
         var cmd = new SqlCommand(@"
             SELECT e.*, c.CategoryId as CatId, c.Title as CategoryTitle,
-                u.UserId as UserId, u.Name as UserName,
+                u.Id as UserId, u.Name as UserName,
                 (SELECT COUNT(*) FROM AttendedEvents ae WHERE ae.EventId = e.EventId) AS EnrolledCount
             FROM Events e
             LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
-            LEFT JOIN Users u ON e.AdminId = u.UserId
+            LEFT JOIN Users u ON e.AdminId = u.Id
             WHERE e.EventId = @EventId", conn);
 
         cmd.Parameters.AddWithValue("@EventId", eventId);
@@ -141,7 +141,7 @@ public class EventRepository: IEventRepository
         MaximumPeople = reader.IsDBNull("MaximumPeople") ? null : reader.GetInt32("MaximumPeople"),
         EventBannerPath = reader.IsDBNull("EventBannerPath") ? null : reader.GetString("EventBannerPath"),
 
-        Category=reader.IsDBNull("Category") ? null : new Category
+        Category=reader.IsDBNull("CatId") ? null : new Category
         {
             CategoryId = (int)reader["CategoryId"],
             Title = (string)reader["CategoryTitle"]

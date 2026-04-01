@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 using Events_GSS.Data.Models;
 
-namespace Events_GSS.Data.Repositories.Interfaces;
+namespace Events_GSS.Data.Repositories;
 
 public interface IQuestRepository
 {
