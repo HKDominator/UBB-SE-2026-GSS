@@ -46,6 +46,20 @@ namespace Events_GSS.ViewModels
             private set { _favouriteEvents = value; OnPropertyChanged(); }
         }
 
+        private ObservableCollection<User> _filteredFriends = new();
+        public ObservableCollection<User> FilteredFriends
+        {
+            get => _filteredFriends;
+            private set { _filteredFriends = value; OnPropertyChanged(); }
+        }
+
+        private ObservableCollection<AttendedEvent> _commonEvents = new();
+        public ObservableCollection<AttendedEvent> CommonEvents
+        {
+            get => _commonEvents;
+            private set { _commonEvents = value; OnPropertyChanged(); }
+        }
+
         // ─── Search & filter state ────────────────────────────────────────
 
         private string _searchQuery = string.Empty;
