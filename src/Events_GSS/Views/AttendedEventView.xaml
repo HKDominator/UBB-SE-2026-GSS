@@ -150,9 +150,8 @@
                                                 Click="ArchiveButton_Click" />
                                             <Button
                                             Content="Leave"
-                                            CommandParameter="{Binding}"
-                                            Command="{Binding DataContext.LeaveCommand,
-                                                ElementName=Root}"
+                                            Tag="{Binding}"
+                                            Click="LeaveButton_Click"
                                             Style="{StaticResource DefaultButtonStyle}" />
                                         </StackPanel>
 

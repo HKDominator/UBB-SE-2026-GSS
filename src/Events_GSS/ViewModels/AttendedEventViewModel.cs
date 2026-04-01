@@ -247,7 +247,7 @@ namespace Events_GSS.ViewModels
 
         // ─── Commands implementation ──────────────────────────────────────
 
-        private async Task LeaveAsync(object? parameter)
+        public async Task LeaveAsync(object? parameter)
         {
             if (parameter is not AttendedEvent ae) return;
 

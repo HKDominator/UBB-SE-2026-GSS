@@ -32,6 +32,12 @@ namespace Events_GSS.Views
                 await ViewModel.SetFavouriteAsync(ae);
         }
 
+        private async void LeaveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is AttendedEvent ae)
+                await ViewModel.LeaveAsync(ae);
+        }
+
         protected override async void OnNavigatedTo(NavigationEventArgs e)
         {
             base.OnNavigatedTo(e);
