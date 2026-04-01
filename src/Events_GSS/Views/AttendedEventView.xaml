@@ -249,9 +249,9 @@
                                         <Button
                                             Grid.Column="1"
                                             Content="Unfavourite"
-                                            CommandParameter="{Binding}"
-                                            Command="{Binding DataContext.SetFavouriteCommand,
-                                                ElementName=Root}" />
+                                            Tag="{Binding}"
+                                            Click="FavouriteButton_Click"
+                                            />
                                     </Grid>
                                 </Border>
                             </DataTemplate>
@@ -260,15 +260,20 @@
                 </TabViewItem>
 
                 <TabViewItem Header="Common Events">
-                    <AutoSuggestBox
+                    <StackPanel>
+                        <AutoSuggestBox
                         Grid.Column="3"
                         Text="{Binding FriendSearchQuery, Mode=TwoWay}"
                         ItemsSource="{Binding FilteredD}"
                         PlaceholderText="Friend"
                         SuggestionChosen="FriendBox_Chosen"
                         MinWidth="240"
-                    >
-                    </AutoSuggestBox>
+                        >
+                        </AutoSuggestBox>
+                        <ListView ItemsSource="">
+                        
+                        </ListView>
+                    </StackPanel>
                 </TabViewItem>
                 
             </TabView>
