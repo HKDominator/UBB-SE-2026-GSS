@@ -11,8 +11,8 @@
 
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/> 
-           
+            <!--<RowDefinition Height="Auto"/> -->
+
 
             <RowDefinition Height="Auto"/> 
 
@@ -23,7 +23,7 @@
         </Grid.RowDefinitions>
         
         <!-- TOP: NAVIGATION BAR-->
-        <local:NavigationBar Grid.Row="0"/>
+        <!--<local:NavigationBar Grid.Row="0"/>-->
 
         <!-- SEARCH + FILTER ROW      -->
         <Grid Grid.Row="1" Padding="16,12" ColumnSpacing="8">
@@ -63,7 +63,7 @@
                                 Header="End Date (for range)"
                                 SelectedDate="{x:Bind ViewModel.DateRangeEnd, Mode=TwoWay}"/>
 
-                            <Button
+            <Button
                                 Content="Apply Filters"
                                 HorizontalAlignment="Stretch"
                                 Command="{x:Bind ViewModel.FilterCommand}"/>
@@ -101,10 +101,10 @@
                     <ItemsControl.ItemTemplate>
                         <DataTemplate x:DataType="models:Event">
                             <Border
-                                BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
-                                BorderThickness="1"
-                                CornerRadius="8"
-                                Margin="0,0,0,4">
+        BorderBrush="{ThemeResource ControlStrongStrokeColorDefaultBrush}"
+        BorderThickness="1"
+        CornerRadius="8"
+        Margin="0,0,0,4">
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="140"/>
@@ -113,46 +113,46 @@
 
                                     <!-- Event Banner -->
                                     <Border
-                                        Grid.Column="0"
-                                        CornerRadius="8,0,0,8"
-                                        Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}">
+                Grid.Column="0"
+                CornerRadius="8,0,0,8"
+                Background="{ThemeResource SystemFillColorSolidNeutralBackgroundBrush}">
                                         <Image
-                                            Source="{x:Bind EventBannerPath}"
-                                            Stretch="UniformToFill"
-                                            Height="140"/>
+                    Source="{x:Bind EventBannerPath}"
+                    Stretch="UniformToFill"
+                    Height="140"/>
                                     </Border>
 
                                     <!-- Event Info -->
                                     <StackPanel Grid.Column="1" Padding="16,12" Spacing="4">
 
                                         <Border
-                                            Background="{ThemeResource AccentAAFillColorDefaultBrush}"
-                                            CornerRadius="4"
-                                            Padding="8,2"
-                                            HorizontalAlignment="Left">
+                    Background="{ThemeResource AccentAAFillColorDefaultBrush}"
+                    CornerRadius="4"
+                    Padding="8,2"
+                    HorizontalAlignment="Left">
                                             <TextBlock
-                                                Text="{x:Bind Category.Title, FallbackValue='No Category'}"
-                                                FontSize="11"
-                                                FontWeight="SemiBold"/>
+                        Text="{x:Bind Category.Title, FallbackValue='No Category'}"
+                        FontSize="11"
+                        FontWeight="SemiBold"/>
                                         </Border>
 
                                         <TextBlock
-                                            Text="{x:Bind Name}"
-                                            Style="{ThemeResource SubtitleTextBlockStyle}"
-                                            TextWrapping="Wrap"/>
+                    Text="{x:Bind Name}"
+                    Style="{ThemeResource SubtitleTextBlockStyle}"
+                    TextWrapping="Wrap"/>
 
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon Glyph="&#xE787;" FontSize="13"/>
                                             <TextBlock
-                                                Text="{x:Bind StartDateTime}"
-                                                Style="{ThemeResource CaptionTextBlockStyle}"/>
+                        Text="{x:Bind StartDateTime}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"/>
                                         </StackPanel>
 
                                         <StackPanel Orientation="Horizontal" Spacing="6">
                                             <FontIcon Glyph="&#xE707;" FontSize="13"/>
                                             <TextBlock
-                                                Text="{x:Bind Location}"
-                                                Style="{ThemeResource CaptionTextBlockStyle}"/>
+                        Text="{x:Bind Location}"
+                        Style="{ThemeResource CaptionTextBlockStyle}"/>
                                         </StackPanel>
 
                                         <Grid Margin="0,4,0,0">
@@ -162,24 +162,26 @@
                                             </Grid.ColumnDefinitions>
 
                                             <StackPanel
-                                                Grid.Column="0"
-                                                Orientation="Horizontal"
-                                                Spacing="4"
-                                                VerticalAlignment="Center">
+                        Grid.Column="0"
+                        Orientation="Horizontal"
+                        Spacing="4"
+                        VerticalAlignment="Center">
                                                 <FontIcon Glyph="&#xE716;" FontSize="13"/>
                                                 <TextBlock Style="{ThemeResource CaptionTextBlockStyle}">
-                                                    <Run Text="{x:Bind EnrolledCount}"/>
-                                                    <Run Text="/"/>
-                                                    <Run Text="{x:Bind MaximumPeople, FallbackValue='∞'}"/>
+                            <Run Text="{x:Bind EnrolledCount}"/>
+                            <Run Text="/"/>
+                            <Run Text="{x:Bind MaximumPeople, FallbackValue='∞'}"/>
                                                 </TextBlock>
                                             </StackPanel>
 
                                             <Button
-                                                Grid.Column="1"
-                                                Content="Join"
-                                                Style="{ThemeResource AccentButtonStyle}"/>
+                        Grid.Column="1"
+                        Content="Join"
+                        Style="{ThemeResource AccentButtonStyle}"/>
                                         </Grid>
+
                                     </StackPanel>
+                                    <!-- closes Event Info StackPanel -->
                                 </Grid>
                             </Border>
                         </DataTemplate>
@@ -198,5 +200,11 @@
             HorizontalAlignment="Left"
             Style="{ThemeResource AccentButtonStyle}"/>
 
+        <ProgressRing
+            Grid.Row="1"
+            x:Name="LoadingRing"
+            IsActive="True"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center" />
     </Grid>
 </Page>

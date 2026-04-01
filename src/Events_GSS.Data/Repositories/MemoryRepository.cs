@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 
 using Events_GSS.Data.Database;
 using Events_GSS.Data.Models;
-using Events_GSS.Data.Repositories.Interfaces;
+using Events_GSS.Data.Repositories;
+//using Events_GSS.Data.Repositories.Interfaces;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;
@@ -25,11 +26,11 @@ namespace Events_GSS.Data.Repositories
         {
 
             string getMemoriesByEventQuery = @"SELECT m.MemoryId, m.UserId, m.PhotoPath, m.Text, m.CreatedAt,
-       e.EventId, e.Name, e.AdminId
-FROM Memories m
-INNER JOIN Events e ON e.EventId = m.EventId
-WHERE m.EventId = @EventId
-ORDER BY m.CreatedAt DESC";
+                                                      e.EventId, e.Name, e.AdminId
+                                               FROM Memories m
+                                               INNER JOIN Events e ON e.EventId = m.EventId
+                                               WHERE m.EventId = @EventId
+                                               ORDER BY m.CreatedAt DESC";
 
             using var conn = _factory.CreateConnection();
             await conn.OpenAsync();
@@ -124,7 +125,7 @@ ORDER BY m.CreatedAt DESC";
         public async Task<int> GetLikesCountAsync(int memoryId)
         {
             string getLikesCountForSpecificMemory = @"SELECT COUNT(*) FROM MemoryLikes WHERE MemoryId = @MemoryId";
-            
+
             using var conn = _factory.CreateConnection();
             await conn.OpenAsync();
             using var cmd = new SqlCommand(getLikesCountForSpecificMemory, conn);

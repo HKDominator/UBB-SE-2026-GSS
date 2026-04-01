@@ -30,22 +30,37 @@ public sealed partial class EventListingPage : Page
     {
         this.InitializeComponent();
         //ViewModel = viewModel;
-    }
+        }
     public EventListingPage()
-    {
+        {
         this.InitializeComponent();
     }
 
-    protected override void OnNavigatedTo(NavigationEventArgs e)
-    {
+    protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
         //base.OnNavigatedTo(e);
         //ViewModel.LoadCommand.Execute(null);
 
         base.OnNavigatedTo(e);
         if (e.Parameter is EventListingViewModel vm)
-        {
+    {
             ViewModel = vm;
             ViewModel.LoadCommand.Execute(null);
+
+            // TEMPORARY DEBUG - remove after testing
+            try
+            {
+                await ViewModel.LoadCommand.ExecuteAsync(null);
+                var count = ViewModel.Categories.Count;
+                var eventsCount = ViewModel.Events.Count;
+
+                System.Diagnostics.Debug.WriteLine($"Categories loaded: {count}");
+                System.Diagnostics.Debug.WriteLine($"Events loaded: {eventsCount}");
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine($"ERROR: {ex.Message}");
+            }
         }
     }
 }

@@ -14,7 +14,24 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="ViewModels\AnnouncementControl.xaml" />
+    <None Remove="Views\AnnouncementControl.xaml" />
+    <None Remove="Views\CreateEventPage.xaml" />
+    <None Remove="Views\DiscussionControl.xaml" />
+    <None Remove="Views\AttendedEventView.xaml" />
+    <None Remove="Views\EventDetailPage.xaml" />
+    <None Remove="Views\EventListingPage.xaml" />
     <None Remove="Views\QuestAdminControl.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventStep1View.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventControl.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventStep2View.xaml" />
+    <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -57,10 +74,34 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\CreateEventPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\EventListingPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Update="Views\NavigationBar.xaml">
+    <Page Update="Views\EventDetailPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\ShellPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\AnnouncementControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="ViewModels\AnnouncementControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\DiscussionControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\CreateEventStep2View.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\CreateEventControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\CreateEventStep1View.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Update="Views\QuestAdminControl.xaml">
@@ -70,6 +111,11 @@
   <ItemGroup>
     <Page Update="Views\MemoryView.xaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\CreateEventStep3View.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 
