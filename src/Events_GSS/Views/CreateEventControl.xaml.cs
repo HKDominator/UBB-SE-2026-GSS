@@ -32,7 +32,7 @@ public sealed partial class CreateEventControl : UserControl
     }
 
     // Minimal dummy repo implementation
-    private class DummyQuestRepository : Events_GSS.Data.Repositories.Interfaces.IQuestRepository
+    private class DummyQuestRepository : Events_GSS.Data.Repositories.IQuestRepository
     {
         public System.Threading.Tasks.Task<int> AddQuestAsync(Events_GSS.Data.Models.Event toEvent, Events_GSS.Data.Models.Quest quest) => System.Threading.Tasks.Task.FromResult(0);
         public System.Threading.Tasks.Task DeleteQuestAsync(Events_GSS.Data.Models.Quest quest) => System.Threading.Tasks.Task.CompletedTask;

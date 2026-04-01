@@ -26,6 +26,8 @@ using Events_GSS.Data.Repositories.announcementRepository;
 using Events_GSS.Data.Services.discussionService;
 using Events_GSS.Data.Repositories.eventRepository;
 using Events_GSS.Data.Services.announcementServices;
+using Events_GSS.Services;
+using Events_GSS.Services.Interfaces;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
