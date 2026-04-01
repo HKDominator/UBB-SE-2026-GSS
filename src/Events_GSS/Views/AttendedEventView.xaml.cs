@@ -1,7 +1,9 @@
+using Events_GSS.Data.Models;
+using Events_GSS.ViewModels;
+
+using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Navigation;
-
-using Events_GSS.ViewModels;
 
 namespace Events_GSS.Views
 {
@@ -16,6 +18,12 @@ namespace Events_GSS.Views
             DataContext = ViewModel;
 
             Loaded += async (s, e) => await ViewModel.LoadAsync();
+        }
+
+        private async void ArchiveButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is AttendedEvent ae)
+                await ViewModel.SetArchivedAsync(ae);
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)

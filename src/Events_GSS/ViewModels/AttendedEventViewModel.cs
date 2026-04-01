@@ -7,6 +7,9 @@ using Events_GSS.Data.Models;
 using Events_GSS.Services;
 using Events_GSS.Services.Interfaces;
 
+using Microsoft.UI.Xaml;
+using Microsoft.UI.Xaml.Controls;
+
 namespace Events_GSS.ViewModels
 {
     public class AttendedEventViewModel : INotifyPropertyChanged
@@ -260,7 +263,7 @@ namespace Events_GSS.ViewModels
             }
         }
 
-        private async Task SetArchivedAsync(object? parameter)
+        public async Task SetArchivedAsync(object? parameter)
         {
             if (parameter is not AttendedEvent ae) return;
 

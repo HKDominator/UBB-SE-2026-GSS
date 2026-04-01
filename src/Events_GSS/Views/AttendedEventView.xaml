@@ -4,7 +4,8 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:models="using:Events_GSS.Data.Models"
     xmlns:vm="using:Events_GSS.ViewModels"
-    xmlns:converters="using:Events_GSS.Converters">
+    xmlns:converters="using:Events_GSS.Converters"
+    x:Name="Root">
 
     <Page.Resources>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
@@ -146,15 +147,14 @@
                                                 Style="{StaticResource DefaultButtonStyle}" />
                                             <Button
                                                 Content="Archive"
-                                                CommandParameter="{Binding}"
-                                                Command="{Binding DataContext.SetArchivedCommand,
-                                                    ElementName=Root}" />
+                                                Tag="{Binding}"
+                                                Click="ArchiveButton_Click" />
                                             <Button
-                                                Content="Leave"
-                                                CommandParameter="{Binding}"
-                                                Command="{Binding DataContext.LeaveCommand,
-                                                    ElementName=Root}"
-                                                Style="{StaticResource DefaultButtonStyle}" />
+                                            Content="Leave"
+                                            CommandParameter="{Binding}"
+                                            Command="{Binding DataContext.LeaveCommand,
+                                                ElementName=Root}"
+                                            Style="{StaticResource DefaultButtonStyle}" />
                                         </StackPanel>
 
                                         <!-- Category & dates -->
