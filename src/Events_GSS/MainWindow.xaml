@@ -14,8 +14,9 @@
     </Window.SystemBackdrop>
 
     <Grid>
-        <views:MemoryView x:Name="MemoriesView" 
-                  ViewModel="{x:Bind MemoriesViewModel}" />
+        <views:CreateEventControl x:Name="CreateEventView" />
+        <!--<views:MemoryView x:Name="MemoriesView" 
+                  ViewModel="{x:Bind MemoriesViewModel}" />-->
 
     </Grid>
 </Window>

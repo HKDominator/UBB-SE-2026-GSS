@@ -16,14 +16,14 @@ namespace Events_GSS;
 public sealed partial class MainWindow : Window
 {
  //   public QuestAdminViewModel QuestViewModel { get; }
-    public MemoryViewModel MemoriesViewModel { get; }
+ // public MemoryViewModel MemoriesViewModel { get; }
 
-    public MainWindow()
-    {
-        InitializeComponent();
+ public MainWindow()
+ {
+     InitializeComponent();
 
-     //   IQuestService qs = App.Services.GetRequiredService<IQuestService>();
-        IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
+  //   IQuestService qs = App.Services.GetRequiredService<IQuestService>();
+     // IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
 
 
         // TODO: PlaceHolder for event data, replace when navigation is implemented
@@ -33,12 +33,12 @@ public sealed partial class MainWindow : Window
         
      
 
-     //   QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
-        MemoriesViewModel = new MemoryViewModel(memoryService);
-        this.Activated += async (s, e) =>
-        {
-            await MemoriesView.LoadAsync(currentEvent, currentUser);
-        };
+  //   QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
+     // MemoriesViewModel = new MemoryViewModel(memoryService);
+     // this.Activated += async (s, e) =>
+     // {
+     //     await MemoriesView.LoadAsync(currentEvent, currentUser);
+     // };
 
-    }
+ }
 }
