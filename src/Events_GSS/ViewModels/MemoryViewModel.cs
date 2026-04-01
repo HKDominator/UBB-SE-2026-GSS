@@ -90,7 +90,7 @@ namespace Events_GSS.ViewModels
             SortAscendingCommand = new AsyncRelayCommand(() => SortInternalAsync(ascending: true));
             SortDescendingCommand = new AsyncRelayCommand(() => SortInternalAsync(ascending: false));
             OpenGalleryCommand = new AsyncRelayCommand(OpenGalleryInternalAsync);
-            //CloseGalleryCommand = new RelayCommand(CloseGalleryInternal);
+            CloseGalleryCommand = new RelayCommand(CloseGalleryInternal);
         }
 
         // ── Init ──────────────────────────────────────────────────────

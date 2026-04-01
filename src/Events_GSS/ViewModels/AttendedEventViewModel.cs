@@ -132,11 +132,11 @@ namespace Events_GSS.ViewModels
             _attendedEventService = attendedEventService;
             _userService = userService;
 
-            LoadCommand = new RelayCommand(async _ => await LoadAsync());
-            LeaveCommand = new RelayCommand(async p => await LeaveAsync(p), p => p is AttendedEvent);
-            SetArchivedCommand = new RelayCommand(async p => await SetArchivedAsync(p), p => p is AttendedEvent);
-            SetFavouriteCommand = new RelayCommand(async p => await SetFavouriteAsync(p), p => p is AttendedEvent);
-            ClearFiltersCommand = new RelayCommand(_ => ClearFilters());
+            LoadCommand = new RelayCommandAttEv(async _ => await LoadAsync());
+            LeaveCommand = new RelayCommandAttEv(async p => await LeaveAsync(p), p => p is AttendedEvent);
+            SetArchivedCommand = new RelayCommandAttEv(async p => await SetArchivedAsync(p), p => p is AttendedEvent);
+            SetFavouriteCommand = new RelayCommandAttEv(async p => await SetFavouriteAsync(p), p => p is AttendedEvent);
+            ClearFiltersCommand = new RelayCommandAttEv(_ => ClearFilters());
         }
 
         // ─── Load ─────────────────────────────────────────────────────────
@@ -308,20 +308,20 @@ namespace Events_GSS.ViewModels
 
     // ─── RelayCommand ─────────────────────────────────────────────────────
 
-    public class RelayCommand : ICommand
+    public class RelayCommandAttEv : ICommand
     {
         private readonly Func<object?, Task> _executeAsync;
         private readonly Func<object?, bool>? _canExecute;
         private bool _isExecuting;
 
-        public RelayCommand(Func<object?, Task> executeAsync, Func<object?, bool>? canExecute = null)
+        public RelayCommandAttEv(Func<object?, Task> executeAsync, Func<object?, bool>? canExecute = null)
         {
             _executeAsync = executeAsync;
             _canExecute = canExecute;
         }
 
         // Convenience constructor for synchronous actions
-        public RelayCommand(Action<object?> execute, Func<object?, bool>? canExecute = null)
+        public RelayCommandAttEv(Action<object?> execute, Func<object?, bool>? canExecute = null)
             : this(p => { execute(p); return Task.CompletedTask; }, canExecute) { }
 
         public bool CanExecute(object? parameter)
