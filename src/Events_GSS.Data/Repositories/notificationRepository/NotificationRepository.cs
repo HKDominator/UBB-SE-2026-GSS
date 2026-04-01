@@ -76,7 +76,15 @@ namespace Events_GSS.Data.Repositories.notificationRepository
 
         public async Task DeleteAsync(int notificationId)
         {
+            const string query = @"DELETE FROM Notifications WHERE Id = @NotificationId";
+            using var connection = _factory.CreateConnection();
+            await connection.OpenAsync();
 
+            using var command = new SqlCommand(query, connection);
+
+            command.Parameters.AddWithValue("@NotificationId", notificationId);
+
+            await command.ExecuteNonQueryAsync();
         }
     }
 }
