@@ -251,14 +251,38 @@
                         <AutoSuggestBox
                         Grid.Column="3"
                         Text="{Binding FriendSearchQuery, Mode=TwoWay}"
-                        ItemsSource="{Binding FilteredD}"
+                        ItemsSource="{Binding FilteredFriends}"
                         PlaceholderText="Friend"
+                        DisplayMemberPath="Name"
                         SuggestionChosen="FriendBox_Chosen"
                         MinWidth="240"
                         >
                         </AutoSuggestBox>
-                        <ListView ItemsSource="">
-                        
+                        <ListView ItemsSource="{Binding CommonEvents}">
+                            <ListView.ItemTemplate>
+                                <DataTemplate x:DataType="models:AttendedEvent">
+                                    <Border Padding="16,12" Margin="0,4" CornerRadius="8"
+                                    Background="{ThemeResource CardBackgroundFillColorDefaultBrush}"
+                                    BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}"
+                                    BorderThickness="1">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Event.Name}"
+                                       Style="{StaticResource BodyStrongTextBlockStyle}"/>
+                                            <StackPanel Orientation="Horizontal" Spacing="16">
+                                                <TextBlock Text="{Binding Event.Category.Title}"
+                                           Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           FontSize="13"/>
+                                                <TextBlock Foreground="{ThemeResource TextFillColorSecondaryBrush}"
+                                           FontSize="13">
+                                    <Run Text="{Binding Event.StartDateTime}"/>
+                                    <Run Text=" → "/>
+                                    <Run Text="{Binding Event.EndDateTime}"/>
+                                                </TextBlock>
+                                            </StackPanel>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ListView.ItemTemplate>
                         </ListView>
                     </StackPanel>
                 </TabViewItem>
