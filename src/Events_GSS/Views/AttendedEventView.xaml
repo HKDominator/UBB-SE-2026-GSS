@@ -39,7 +39,7 @@
         </Grid>
 
         <!-- Search, filter and sort bar -->
-        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
             <TextBox
                 Grid.Column="0"
                 PlaceholderText="Search events by title..."
@@ -66,8 +66,15 @@
                 MinWidth="160">
             </ComboBox>
 
-            <Button
+            <ComboBox
                 Grid.Column="3"
+                PlaceholderText="Friend"
+                MinWidth="240"
+            >
+            </ComboBox>
+
+                <Button
+                Grid.Column="4"
                 Content="Clear"
                 Command="{Binding ClearFiltersCommand}" />
         </Grid>
