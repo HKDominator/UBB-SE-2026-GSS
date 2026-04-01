@@ -18,16 +18,17 @@ namespace Events_GSS;
 public sealed partial class MainWindow : Window
 {
  //   public QuestAdminViewModel QuestViewModel { get; }
-    public MemoryViewModel MemoriesViewModel { get; }
+ // public MemoryViewModel MemoriesViewModel { get; }
 
-    public MainWindow()
-    {
-        InitializeComponent();
+ public MainWindow()
+ {
+     InitializeComponent();
 
      //   IQuestService qs = App.Services.GetRequiredService<IQuestService>();
         IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
         IUserService userService = App.Services.GetRequiredService<IUserService>();
         IAttendedEventService attendedEventService = App.Services.GetRequiredService<IAttendedEventService>();
+
 
         // TODO: PlaceHolder for event data, replace when navigation is implemented
         var currentUser = new User { UserId = 1 };
@@ -50,5 +51,5 @@ public sealed partial class MainWindow : Window
         */
         
 
-    }
+ }
 }
