@@ -17,7 +17,17 @@
     <None Remove="ViewModels\AnnouncementControl.xaml" />
     <None Remove="Views\AnnouncementControl.xaml" />
     <None Remove="Views\DiscussionControl.xaml" />
+    <None Remove="Views\AttendedEventView.xaml" />
     <None Remove="Views\QuestAdminControl.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventStep1View.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventControl.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventStep2View.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -69,6 +79,15 @@
     <Page Update="Views\DiscussionControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Update="Views\CreateEventStep2View.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\CreateEventControl.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Update="Views\CreateEventStep1View.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\QuestAdminControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -76,6 +95,11 @@
   <ItemGroup>
     <Page Update="Views\MemoryView.xaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\CreateEventStep3View.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 

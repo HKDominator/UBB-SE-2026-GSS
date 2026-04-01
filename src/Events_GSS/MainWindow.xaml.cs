@@ -5,6 +5,7 @@ using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Data.Services; 
 using Events_GSS.ViewModels;
 using Events_GSS.Data.Services.discussionService;
+using Events_GSS.Views;
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,6 +31,8 @@ public sealed partial class MainWindow : Window
         var announcementService = App.Services.GetRequiredService<IAnnouncementService>();
         IQuestService qs = App.Services.GetRequiredService<IQuestService>();
         IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
+        IUserService userService = App.Services.GetRequiredService<IUserService>();
+        IAttendedEventService attendedEventService = App.Services.GetRequiredService<IAttendedEventService>();
 
         // TODO: PlaceHolder for event data, replace when navigation is implemented
         var currentEvent = new Event { EventId = 1 };
@@ -52,7 +55,17 @@ public sealed partial class MainWindow : Window
         // in the xaml file
         //        <views:DiscussionControl 
         //ViewModel = "{x:Bind DiscussionViewModel}" />
-    //_ = DiscussionViewModel.InitializeAsync();
+        AttendedEventViewModel attendedEventViewModel = new AttendedEventViewModel(attendedEventService, userService);
+        //AttendedEventView view = new AttendedEventView(attendedEventViewModel);
+        //Content = view;
+
+        /*
+        this.Activated += async (s, e) =>
+        {
+            //await MemoriesView.LoadAsync(currentEvent, currentUser);
+        };
+        */
+        
 
     //for the announcement view
     _ = AnnouncementViewModel.InitializeAsync();
