@@ -25,7 +25,7 @@ public sealed partial class MainWindow : Window
         InitializeComponent();
 
      //   IQuestService qs = App.Services.GetRequiredService<IQuestService>();
-        IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
+        //IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
 
 
         // TODO: PlaceHolder for event data, replace when navigation is implemented
@@ -36,11 +36,11 @@ public sealed partial class MainWindow : Window
      
 
      //   QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
-        MemoriesViewModel = new MemoryViewModel(memoryService);
-        this.Activated += async (s, e) =>
-        {
-            await MemoriesView.LoadAsync(currentEvent, currentUser);
-        };
+       // MemoriesViewModel = new MemoryViewModel(memoryService);
+        //this.Activated += async (s, e) =>
+        //{
+          //  await MemoriesView.LoadAsync(currentEvent, currentUser);
+        //};
 
 
         //added by me

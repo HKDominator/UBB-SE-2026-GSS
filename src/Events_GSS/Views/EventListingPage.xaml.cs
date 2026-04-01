@@ -31,6 +31,10 @@ public sealed partial class EventListingPage : Page
         this.InitializeComponent();
         //ViewModel = viewModel;
     }
+    public EventListingPage()
+    {
+        this.InitializeComponent();
+    }
 
     protected override void OnNavigatedTo(NavigationEventArgs e)
     {
