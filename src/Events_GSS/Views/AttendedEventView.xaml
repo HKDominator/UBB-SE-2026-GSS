@@ -66,12 +66,12 @@
                 MinWidth="160">
             </ComboBox>
 
-            <ComboBox
+            <AutoSuggestBox
                 Grid.Column="3"
                 PlaceholderText="Friend"
                 MinWidth="240"
             >
-            </ComboBox>
+            </AutoSuggestBox>
 
                 <Button
                 Grid.Column="4"
