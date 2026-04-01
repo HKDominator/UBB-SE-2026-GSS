@@ -31,13 +31,12 @@ public sealed partial class MainWindow : Window
         var currentUser2 = new User { UserId = 2 };
         var currentEvent = new Event { EventId = 1, Admin = currentUser };
         
-     
 
      //   QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
         MemoriesViewModel = new MemoryViewModel(memoryService);
         this.Activated += async (s, e) =>
         {
-            await MemoriesView.LoadAsync(currentEvent, currentUser);
+            await MemoriesView.LoadAsync(currentEvent, currentUser2);
         };
 
     }
