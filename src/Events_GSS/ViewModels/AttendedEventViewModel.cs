@@ -74,6 +74,18 @@ namespace Events_GSS.ViewModels
             }
         }
 
+        private string _friendSearchQuery = string.Empty;
+        public string FriendSearchQuery
+        {
+            get => _friendSearchQuery;
+            set
+            {
+                _friendSearchQuery = value;
+                OnPropertyChanged();
+                FilteredFriends = new ObservableCollection<User>(_userService.SearchFriends(CurrentUser.UserId, _friendSearchQuery));
+            }
+        }
+
         private Category? _selectedCategory;
         public Category? SelectedCategory
         {
