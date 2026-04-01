@@ -24,12 +24,6 @@ namespace Events_GSS.Views
             await ViewModel.InitializeAsync(ev, user);
         }
 
-      
-        
-        private void MyMemoriesToggle_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.ShowOnlyMine = MyMemoriesToggle.IsChecked == true;
-        }
        
 
         private async void LikeButton_Click(object sender, RoutedEventArgs e)
@@ -38,6 +32,10 @@ namespace Events_GSS.Views
                 return;
 
             await ViewModel.ToggleLikeAsync(item);
+        }
+        private void MyMemoriesToggle_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ShowOnlyMine = MyMemoriesToggle.IsChecked == true;
         }
 
         private async void DeleteButton_Click(object sender, RoutedEventArgs e)

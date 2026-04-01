@@ -50,10 +50,11 @@ namespace Events_GSS.ViewModels
         public bool IsLoading
         {
             get => _isLoading;
-            private set {
+            private set
+            {
                 _isLoading = value;
                 OnPropertyChanged();
-                OnPropertyChanged(nameof(IsEmpty)); 
+                OnPropertyChanged(nameof(IsEmpty));
             }
         }
 
@@ -67,7 +68,7 @@ namespace Events_GSS.ViewModels
         public bool IsEmpty => !_isLoading && _memories.Count == 0 && !_isGalleryOpen;
         public bool IsMemoryListVisible => !_isGalleryOpen;
         public bool IsGalleryVisible => _isGalleryOpen;
-       
+
         public bool IsShowOnlyMineChecked
         {
             get => _showOnlyMine;
@@ -96,7 +97,7 @@ namespace Events_GSS.ViewModels
             CloseGalleryCommand = new RelayCommand(CloseGalleryInternal);
         }
 
-      
+
 
         public async Task InitializeAsync(Event currentEvent, User currentUser)
         {
@@ -143,7 +144,7 @@ namespace Events_GSS.ViewModels
             catch (Exception ex) { ErrorMessage = $"Could not toggle like: {ex.Message}"; }
         }
 
-       
+
         public void ResetSortAndFilter()
         {
             _showOnlyMine = false;

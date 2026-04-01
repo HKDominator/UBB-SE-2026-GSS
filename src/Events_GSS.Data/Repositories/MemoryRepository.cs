@@ -4,7 +4,8 @@ using System.Threading.Tasks;
 
 using Events_GSS.Data.Database;
 using Events_GSS.Data.Models;
-using Events_GSS.Data.Repositories.Interfaces;
+using Events_GSS.Data.Repositories;
+//using Events_GSS.Data.Repositories.Interfaces;
 
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Logging;

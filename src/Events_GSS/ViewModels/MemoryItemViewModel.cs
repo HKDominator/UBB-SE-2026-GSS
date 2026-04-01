@@ -33,7 +33,7 @@ namespace Events_GSS.ViewModels
             set { _isLikedByCurrentUser = value; OnPropertyChanged(); }
         }
 
-      
+
         public bool CanDelete { get; }
         public bool CanLike { get; }
 

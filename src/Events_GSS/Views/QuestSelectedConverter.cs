@@ -9,7 +9,6 @@ namespace Events_GSS.Views
     {
         public object Convert(object value, Type targetType, object parameter, string language)
         {
-            // value is the Quest, parameter is the ViewModel
             if (value is Quest quest && parameter is CreateEventViewModel vm)
             {
                 return vm.IsQuestSelected(quest);
