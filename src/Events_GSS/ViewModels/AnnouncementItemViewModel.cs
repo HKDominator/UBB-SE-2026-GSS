@@ -29,7 +29,6 @@ public partial class AnnouncementItemViewModel : ObservableObject
     [ObservableProperty]
     private bool _isRead;
 
-    // Expose model properties
     public int Id => Model.Id;
     public string Message => Model.Message;
     public DateTime Date => Model.Date;
