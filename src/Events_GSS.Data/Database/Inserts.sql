@@ -91,7 +91,8 @@ SET IDENTITY_INSERT Quests ON;
 INSERT INTO Quests(QuestId, EventId, [Name],Description, Difficulty,PrerequisiteQuestId)
 VALUES 
     (1,1, 'Find Flowers!','Find a field with many flowes and upload  a picture with it.',4,NULL),
-    (2,1, 'Group photo','Take a photo with your friends in the field of  flowes.',1,1)
+    (2,1, 'Group photo','Take a photo with your friends in the field of  flowes.',1,1),
+    (3,2, 'Event 2','Take a photo photo PHOTOOO with your friends in the field of  flowes.',2,NULL)
 
 SET IDENTITY_INSERT Quests OFF;
 

@@ -15,7 +15,7 @@ public partial class QuestUserViewModel : ObservableObject
     private readonly IQuestApprovalService _questService;
     private readonly IUserService _userService;
     private readonly Event _currentEvent;
-
+    private bool _isAttending;
     private List<QuestItemViewModel> _allQuests = [];
     public ObservableCollection<QuestItemViewModel> Quests { get; } = [];
 
@@ -40,6 +40,13 @@ public partial class QuestUserViewModel : ObservableObject
         _questService = questService;
         _userService = userService;
         _currentEvent = currentEvent;
+        InitializeAsync();
+    }
+
+    private async Task InitializeAsync()
+    {
+        // The UI will show the default 'false' until this completes
+        _isAttending = await _userService.IsAttending(_currentEvent);
     }
 
     [RelayCommand]
@@ -57,7 +64,7 @@ public partial class QuestUserViewModel : ObservableObject
                 .Select(qm => qm.ForQuest.Id)
                 .ToHashSet();
             _allQuests = result.Select(qm =>
-                new QuestItemViewModel(qm, qm.ForQuest.PrerequisiteQuest is { } p && !approvedIds.Contains(p.Id))
+                new QuestItemViewModel(qm, qm.ForQuest.PrerequisiteQuest is { } p && !approvedIds.Contains(p.Id),_isAttending)
             ).ToList();
             ApplyFilter(QuestFilter.All);
             StatusText = $"{result.Count} quest(s) loaded.";

@@ -1,4 +1,22 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices.WindowsRuntime;
+
+using Events_GSS.Data.Database;
+using Events_GSS.Data.Models;
+using Events_GSS.Data.Repositories;
+using Events_GSS.Data.Repositories.Interfaces;
+using Events_GSS.Data.Services;
+using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.Services;
+using Events_GSS.Services.Interfaces;
+using Events_GSS.ViewModels;
+using Events_GSS.Views;
+
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Controls.Primitives;
@@ -7,24 +25,11 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Microsoft.UI.Xaml.Shapes;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
+
 using Windows.ApplicationModel;
 using Windows.ApplicationModel.Activation;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
-
-using Microsoft.Extensions.DependencyInjection;
-using Events_GSS.Data.Database;
-using Events_GSS.Data.Repositories;
-using Events_GSS.Data.Repositories.Interfaces;
-using Events_GSS.Data.Services;
-using Events_GSS.Data.Services.Interfaces;
-using Events_GSS.Services;
-using Events_GSS.Services.Interfaces;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -37,6 +42,7 @@ namespace Events_GSS
     public partial class App : Application
     {
         private Window? _window;
+        public Window? MainWindow => _window;
 
         /// <summary>
         /// Initializes the singleton application object.  This is the first line of authored code
@@ -81,6 +87,22 @@ namespace Events_GSS
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
+            // 1. Get your services from the DI container you already set up
+            var questService = Services.GetRequiredService<IQuestService>();
+            var questApprovalService = Services.GetRequiredService<IQuestApprovalService>();
+            // 2. Create the "Inner" ViewModel (The one for QuestAdminControl)
+            // You'll need a dummy 'Event' object here since your VM requires one
+            var dummyEvent = new Event { Name = "Test Event", EventId = 1 };
+            var adminVM = new QuestAdminViewModel(dummyEvent, questService);
+
+            // 3. Create the "Bridge" Page manually
+            var rootPage = new QuestApprovalPage();
+
+            // 4. Manually trigger the ViewModel setup (since OnNavigatedTo won't fire)
+            rootPage.ViewModel = new QuestApprovalViewModel(adminVM,questApprovalService);
+
+            // 5. Set the window content
+            _window.Content = rootPage;
             _window.Activate();
         }
     }

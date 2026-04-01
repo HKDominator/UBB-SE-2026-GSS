@@ -17,5 +17,6 @@
     <!--      -->
     <!-- -->
     <!-- </Grid> -->
-    <views:QuestUserPage x:Name="QuestUserPage" />
+    <views:QuestApprovalPage x:Name="QuestApprovalPage" />
+    <!-- <views:QuestUserPage x:Name="QuestUserPage" /> -->
 </Window>

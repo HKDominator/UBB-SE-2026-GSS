@@ -147,11 +147,12 @@ public class QuestMemoryRepository : IQuestMemoryRepository
             await connection.OpenAsync();
 
             const string query = @"
-                SELECT qm.QuestMemoryId, qm.QuestId, qm.MemoryId,
+                SELECT qm.QuestMemoryId, qm.QuestId, qm.MemoryId, qm.Status,
                        m.UserId, m.PhotoPath, m.Text, m.CreatedAt
                 FROM QuestMemories qm
                 JOIN Memories m ON qm.MemoryId = m.MemoryId
-                WHERE qm.QuestId = @QuestId";
+                WHERE qm.QuestId = @QuestId
+                AND qm.Status='Submitted'";
 
             using SqlCommand cmd = new SqlCommand(query, connection);
             cmd.Parameters.AddWithValue("@QuestId", quest.Id);

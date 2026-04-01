@@ -8,16 +8,17 @@
     PrimaryButtonClick="OnSubmitClicked">
 
     <StackPanel Spacing="12" MinWidth="360">
+        <TextBlock x:Name="QuestNameText" Style="{StaticResource SubtitleTextBlockStyle}"/>
 
-        <TextBlock x:Name="QuestNameText"
-                   Style="{StaticResource SubtitleTextBlockStyle}"/>
-
-        <TextBox x:Name="ImageUrlBox"
-                 Header="Image URL (optional)"
-                 PlaceholderText="https://..."/>
+        <StackPanel Spacing="8">
+            <TextBlock Text="Photo Proof" Style="{StaticResource BodyStrongTextBlockStyle}"/>
+            <Button Content="Choose Photo..." Click="OnPickPhotoClicked" HorizontalAlignment="Stretch"/>
+            <TextBlock x:Name="FileNameText" Style="{StaticResource CaptionTextBlockStyle}" Foreground="Gray"/>
+            <Image x:Name="ImagePreview" MaxHeight="200" Visibility="Collapsed" Stretch="Uniform"/>
+        </StackPanel>
 
         <TextBox x:Name="DescriptionBox"
-                 Header="Description (optional)"
+                 Header="Description"
                  PlaceholderText="Describe how you completed this quest..."
                  AcceptsReturn="True"
                  TextWrapping="Wrap"
@@ -25,7 +26,8 @@
 
         <TextBlock x:Name="ValidationText"
                    Foreground="Red"
+                   FontSize="12"
+                   TextWrapping="Wrap"
                    Visibility="Collapsed"/>
-
     </StackPanel>
 </ContentDialog>

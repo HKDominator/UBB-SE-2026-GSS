@@ -1,4 +1,6 @@
-﻿using Events_GSS.Data.Models;
+﻿using System.Diagnostics;
+
+using Events_GSS.Data.Models;
 using Events_GSS.Services.Interfaces;
 
 namespace Events_GSS.Services
@@ -41,7 +43,7 @@ namespace Events_GSS.Services
         };
 
         // The currently logged-in user — change UserId to simulate a different user
-        private static readonly int _currentUserId = 1;
+        private static readonly int _currentUserId = 3;
 
         /// <summary>
         /// Returns the currently logged-in user.
@@ -89,9 +91,17 @@ namespace Events_GSS.Services
 
         public async Task<bool> IsAttending(Event currentEvent)
         {
-            List<AttendedEvent> attendingEvents =await
-                _attendedEventService.GetAttendedEventsAsync(_currentUserId);
-            return attendingEvents.Exists(ev => ev.Event.EventId == currentEvent.EventId);
+            try
+            {
+                List<AttendedEvent> attendingEvents = await
+                    _attendedEventService.GetAttendedEventsAsync(_currentUserId);
+                return attendingEvents.Exists(ev => ev.Event.EventId == currentEvent.EventId);
+            }
+            catch (Exception exc)
+            {
+                Debug.WriteLine("AttendingEvents: "+exc);
+                return false;
+            }
         }
 
     }

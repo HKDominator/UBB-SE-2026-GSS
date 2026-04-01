@@ -15,6 +15,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="Views\QuestAdminControl.xaml" />
+    <None Remove="Views\QuestApprovalPage.xaml" />
     <None Remove="Views\SubmitProofDialog.xaml" />
   </ItemGroup>
 
@@ -58,6 +59,9 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\QuestApprovalPage.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\QuestUserPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

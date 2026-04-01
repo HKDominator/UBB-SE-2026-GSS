@@ -3,11 +3,12 @@
 using Events_GSS.Data.Models;
 namespace Events_GSS.ViewModels;
 
-public partial class QuestItemViewModel(QuestMemory questMemory, bool isLocked) : ObservableObject
+public partial class QuestItemViewModel(QuestMemory questMemory, bool isLocked, bool isAttending) : ObservableObject
 {
     public QuestMemory QuestMemory { get; } = questMemory;
     public Quest Quest => QuestMemory.ForQuest;
     public bool IsLocked { get; } = isLocked;
+    private bool _isAttending = isAttending;
 
     public string Name => IsLocked ? "???" : Quest.Name;
     public string Description => IsLocked ? "Complete the prerequisite to unlock." : Quest.Description;
@@ -25,6 +26,6 @@ public partial class QuestItemViewModel(QuestMemory questMemory, bool isLocked) 
         _ => ""
     };
 
-    public bool CanSubmit => !IsLocked && Status is QuestMemoryStatus.Incomplete or QuestMemoryStatus.Rejected;
-    public bool CanDelete => Status is QuestMemoryStatus.Submitted or QuestMemoryStatus.Approved or QuestMemoryStatus.Rejected;
+    public bool CanSubmit => _isAttending && !IsLocked && Status is QuestMemoryStatus.Incomplete or QuestMemoryStatus.Rejected;
+    public bool CanDelete => _isAttending && Status is QuestMemoryStatus.Submitted or QuestMemoryStatus.Approved or QuestMemoryStatus.Rejected;
 }
