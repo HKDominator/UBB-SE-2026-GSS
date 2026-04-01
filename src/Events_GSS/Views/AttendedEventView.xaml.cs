@@ -14,6 +14,8 @@ namespace Events_GSS.Views
             this.InitializeComponent();
             ViewModel = viewModel;
             DataContext = ViewModel;
+
+            Loaded += async (s, e) => await ViewModel.LoadAsync();
         }
 
         protected override async void OnNavigatedTo(NavigationEventArgs e)
