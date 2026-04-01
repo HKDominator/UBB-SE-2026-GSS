@@ -59,7 +59,10 @@ namespace Events_GSS.Views
         private async void FriendBox_Chosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             if (args.SelectedItem is User friend)
+            {
+                sender.Text = friend.Name;
                 await ViewModel.LoadCommonEventsAsync(friend);
+            }
         }
         
     }
