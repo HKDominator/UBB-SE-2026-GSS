@@ -25,18 +25,11 @@ namespace Events_GSS.Views
         }
 
       
-
+        
         private void MyMemoriesToggle_Click(object sender, RoutedEventArgs e)
         {
             ViewModel.ShowOnlyMine = MyMemoriesToggle.IsChecked == true;
         }
-
-       
-        private void SortButton_Click(object sender, RoutedEventArgs e)
-        {
-            MyMemoriesToggle.IsChecked = false;
-        }
-
        
 
         private async void LikeButton_Click(object sender, RoutedEventArgs e)

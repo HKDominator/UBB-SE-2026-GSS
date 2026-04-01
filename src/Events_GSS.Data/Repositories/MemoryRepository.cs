@@ -124,7 +124,7 @@ namespace Events_GSS.Data.Repositories
         public async Task<int> GetLikesCountAsync(int memoryId)
         {
             string getLikesCountForSpecificMemory = @"SELECT COUNT(*) FROM MemoryLikes WHERE MemoryId = @MemoryId";
-            
+
             using var conn = _factory.CreateConnection();
             await conn.OpenAsync();
             using var cmd = new SqlCommand(getLikesCountForSpecificMemory, conn);

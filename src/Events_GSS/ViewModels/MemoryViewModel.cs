@@ -67,6 +67,12 @@ namespace Events_GSS.ViewModels
         public bool IsEmpty => !_isLoading && _memories.Count == 0 && !_isGalleryOpen;
         public bool IsMemoryListVisible => !_isGalleryOpen;
         public bool IsGalleryVisible => _isGalleryOpen;
+       
+        public bool IsShowOnlyMineChecked
+        {
+            get => _showOnlyMine;
+            private set { _showOnlyMine = value; OnPropertyChanged(); }
+        }
 
         public bool ShowOnlyMine
         {
@@ -144,13 +150,12 @@ namespace Events_GSS.ViewModels
             OnPropertyChanged(nameof(ShowOnlyMine));
         }
 
-       
-
         private async Task SortInternalAsync(bool ascending)
         {
             _sortAscending = ascending;
             _showOnlyMine = false;
             OnPropertyChanged(nameof(ShowOnlyMine));
+            IsShowOnlyMineChecked = false;
             await LoadMemoriesAsync();
         }
 
@@ -188,7 +193,11 @@ namespace Events_GSS.ViewModels
 
                 var items = new ObservableCollection<MemoryItemViewModel>();
                 foreach (var m in list)
-                    items.Add(new MemoryItemViewModel(m, _currentUser));
+                    items.Add(new MemoryItemViewModel(
+                        m,
+                        canDelete: _memoryService.CanDelete(m, _currentUser),
+                        canLike: _memoryService.CanLike(m, _currentUser)
+                    ));
 
                 Memories = items;
             }

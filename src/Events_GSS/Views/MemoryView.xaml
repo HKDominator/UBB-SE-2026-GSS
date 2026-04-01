@@ -39,17 +39,19 @@
                     Margin="16,0,16,8"
                     Visibility="{x:Bind ViewModel.IsMemoryListVisible, Mode=OneWay}">
 
+           
             <ToggleButton x:Name="MyMemoriesToggle"
                           Content="My Memories"
+                          IsChecked="{x:Bind ViewModel.IsShowOnlyMineChecked, Mode=OneWay}"
                           Click="MyMemoriesToggle_Click"/>
-
+            
             <Button Content="Date ↑"
-                    Click="SortButton_Click"
                     Command="{x:Bind ViewModel.SortAscendingCommand}"/>
 
             <Button Content="Date ↓"
-                    Click="SortButton_Click"
                     Command="{x:Bind ViewModel.SortDescendingCommand}"/>
+
+          
         </StackPanel>
 
        

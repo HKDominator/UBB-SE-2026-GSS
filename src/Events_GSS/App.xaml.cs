@@ -26,6 +26,7 @@ using Events_GSS.Data.Services.eventServices;
 using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Services.Interfaces;
 
+
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 
@@ -63,6 +64,9 @@ namespace Events_GSS
 
             services.AddTransient<IMemoryRepository,MemoryRepository>();
             services.AddTransient<IMemoryService,MemoryService>();
+            services.AddTransient<IAttendedEventRepository, AttendedEventRepository>();
+         //   services.AddTransient<IUserService, MockUserService>();
+         //   services.AddTransient<IAttendedEventService, AttendedEventService>();
 
             Services = services.BuildServiceProvider();
         }
