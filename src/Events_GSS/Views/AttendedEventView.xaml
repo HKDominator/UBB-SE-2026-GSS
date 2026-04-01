@@ -17,7 +17,6 @@
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="24" RowSpacing="16">
 
-        <!-- RP & user header -->
         <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
             <TextBlock
                 Grid.Column="0"
@@ -38,7 +37,6 @@
             </StackPanel>
         </Grid>
 
-        <!-- Search, filter and sort bar -->
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
             <TextBox
                 Grid.Column="0"
@@ -72,16 +70,13 @@
                 Command="{Binding ClearFiltersCommand}" />
         </Grid>
 
-        <!-- Main content area -->
         <Grid Grid.Row="2">
-            <!-- Loading indicator -->
             <ProgressRing
                 IsActive="{Binding IsLoading}"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Center"
                 Visibility="{Binding IsLoading}" />
 
-            <!-- Error message -->
             <TextBlock
                 Text="{Binding ErrorMessage}"
                 Foreground="Red"
@@ -89,13 +84,11 @@
                 VerticalAlignment="Center"
                 Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
 
-            <!-- Tabs: Active / Archived / Favourites -->
             <TabView
                 Visibility="{Binding IsLoading, Converter={StaticResource BoolToInverseVisibilityConverter}}"
                 TabWidthMode="Equal"
                 IsAddTabButtonVisible="False">
 
-                <!-- Active events tab -->
                 <TabViewItem Header="Attending">
                     <ListView ItemsSource="{Binding AttendedEvents}">
                         <ListView.ItemTemplate>
@@ -109,12 +102,10 @@
                                     BorderThickness="1">
                                     <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto,Auto">
 
-                                        <!-- Event name + upcoming badge -->
                                         <StackPanel Grid.Row="0" Grid.Column="0" Orientation="Horizontal" Spacing="8">
                                             <TextBlock
                                                 Text="{Binding Event.Name}"
                                                 Style="{StaticResource BodyStrongTextBlockStyle}" />
-                                            <!-- Upcoming indicator (req 5.6) — shown when event starts within 48h -->
                                             <Border
                                                 Background="#FF8C00"
                                                 CornerRadius="4"
@@ -122,14 +113,12 @@
                                                 Visibility="{Binding Event, Converter={StaticResource UpcomingEventConverter}}">
                                                 <TextBlock Text="Soon" Foreground="White" FontSize="11"/>
                                             </Border>
-                                            <!-- Favourite star -->
                                             <TextBlock
                                                 Text="⭐"
                                                 FontSize="14"
                                                 Visibility="{Binding IsFavourite}" />
                                         </StackPanel>
 
-                                        <!-- Action buttons -->
                                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="4">
                                             <Button
                                                 Content="{Binding IsFavourite, Converter={StaticResource FavouriteButtonTextConverter}}"
@@ -147,7 +136,6 @@
                                             Style="{StaticResource DefaultButtonStyle}" />
                                         </StackPanel>
 
-                                        <!-- Category & dates -->
                                         <StackPanel Grid.Row="1" Grid.Column="0" Grid.ColumnSpan="2"
                                                     Orientation="Horizontal" Spacing="16" Margin="0,4,0,0">
                                             <TextBlock
@@ -180,7 +168,6 @@
                     </ListView>
                 </TabViewItem>
 
-                <!-- Archived events tab -->
                 <TabViewItem Header="Archived">
                     <ListView ItemsSource="{Binding ArchivedEvents}">
                         <ListView.ItemTemplate>
@@ -215,7 +202,6 @@
                     </ListView>
                 </TabViewItem>
 
-                <!-- Favourites tab -->
                 <TabViewItem Header="Favourites">
                     <ListView ItemsSource="{Binding FavouriteEvents}">
                         <ListView.ItemTemplate>

@@ -1,81 +1,80 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.UI.Xaml;
-using Microsoft.UI.Xaml.Controls;
-using Microsoft.UI.Xaml.Controls.Primitives;
-using Microsoft.UI.Xaml.Data;
-using Microsoft.UI.Xaml.Input;
-using Microsoft.UI.Xaml.Media;
-using Microsoft.UI.Xaml.Navigation;
-using Microsoft.UI.Xaml.Shapes;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.ApplicationModel;
-using Windows.ApplicationModel.Activation;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
+﻿using System;
 
-using Microsoft.Extensions.DependencyInjection;
 using Events_GSS.Data.Database;
 using Events_GSS.Data.Repositories;
-using Events_GSS.Data.Repositories.Interfaces;
+using Events_GSS.Data.Repositories.announcementRepository;
+using Events_GSS.Data.Repositories.categoriesRepository;
+using Events_GSS.Data.Repositories.eventRepository;
+
 using Events_GSS.Data.Services;
+using Events_GSS.Data.Services.announcementServices;
+using Events_GSS.Data.Services.categoryServices;
+using Events_GSS.Data.Services.discussionService;
+using Events_GSS.Data.Services.eventServices;
 using Events_GSS.Data.Services.Interfaces;
-using Events_GSS.Services.Interfaces;
 using Events_GSS.Services;
+using Events_GSS.Services.Interfaces;
+using Events_GSS.Views;
 
-// To learn more about WinUI, the WinUI project structure,
-// and more about our project templates, see: http://aka.ms/winui-project-info.
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.UI.Xaml;
 
-namespace Events_GSS
+namespace Events_GSS;
+
+public partial class App : Application
 {
-    /// <summary>
-    /// Provides application-specific behavior to supplement the default Application class.
-    /// </summary>
-    public partial class App : Application
+    private Window? _window;
+
+    public Window? MainWindow => _window;
+
+    public new static App Current => (App)Application.Current;
+    public static IServiceProvider Services { get; private set; } = null!;
+
+    public App()
     {
-        private Window? _window;
+        InitializeComponent();
 
-        /// <summary>
-        /// Initializes the singleton application object.  This is the first line of authored code
-        /// executed, and as such is the logical equivalent of main() or WinMain().
-        /// </summary>
-        /// 
-        public new static App Current => (App)Application.Current;
-        public static IServiceProvider Services { get; private set; }
-        public App()
-        {
-            InitializeComponent();
-            IConfiguration configuration = new ConfigurationBuilder()
-                .SetBasePath(AppContext.BaseDirectory)
-                .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
-                .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
-                .Build();
-            var services = new ServiceCollection();
-            string connectionString = configuration.GetConnectionString("DefaultConnection");
-            services.AddSingleton(new SqlConnectionFactory(connectionString));
+        IConfiguration configuration = new ConfigurationBuilder()
+            .SetBasePath(AppContext.BaseDirectory)
+            .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+            .AddJsonFile("appsettings.local.json", optional: true, reloadOnChange: true)
+            .Build();
 
-            services.AddTransient<IQuestRepository,QuestRepository>();
-            services.AddTransient<IQuestService,QuestService>();
-            services.AddTransient<IMemoryRepository,MemoryRepository>();
-            services.AddTransient<IMemoryService,MemoryService>();
-            services.AddTransient<IAttendedEventRepository, AttendedEventRepository>();
-            services.AddTransient<IUserService, MockUserService>();
-            services.AddTransient<IAttendedEventService, AttendedEventService>();
+        var services = new ServiceCollection();
+        string connectionString = configuration.GetConnectionString("DefaultConnection")!;
+        services.AddSingleton(new SqlConnectionFactory(connectionString));
 
-            Services = services.BuildServiceProvider();
-        }
+        services.AddTransient<IEventRepository, EventRepository>();
+        services.AddTransient<ICategoryRepository, CategoryRepository>();
+        services.AddTransient<IQuestRepository, QuestRepository>();
+        services.AddTransient<IAnnouncementRepository, AnnouncementRepository>();
+        services.AddTransient<IDiscussionRepository, DiscussionRepository>();
+        services.AddTransient<IMemoryRepository, MemoryRepository>();
+        services.AddTransient<IAttendedEventRepository, AttendedEventRepository>();
 
-        /// <summary>
-        /// Invoked when the application is launched.
-        /// </summary>
-        /// <param name="args">Details about the launch request and process.</param>
-        protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
-        {
-            _window = new MainWindow();
-            _window.Activate();
-        }
+        services.AddTransient<IEventService, EventService>();
+        services.AddTransient<ICategoryServices, CategoryServices>();
+        services.AddTransient<IQuestService, QuestService>();
+        services.AddTransient<IAnnouncementService, AnnouncementService>();
+        services.AddTransient<IDiscussionService, DiscussionService>();
+        services.AddTransient<IMemoryService, MemoryService>();
+        services.AddTransient<IAttendedEventService, AttendedEventService>();
+        services.AddTransient<IUserService, MockUserService>();
+
+        var navService = new NavigationService();
+        navService.RegisterPage(PageKeys.EventListing, typeof(EventListingPage));
+        navService.RegisterPage(PageKeys.MyEvents, typeof(AttendedEventView));
+        navService.RegisterPage(PageKeys.EventDetail, typeof(EventDetailPage));
+        navService.RegisterPage(PageKeys.CreateEvent, typeof(CreateEventPage));
+        services.AddSingleton<INavigationService>(navService);
+
+        Services = services.BuildServiceProvider();
+    }
+
+    protected override void OnLaunched(LaunchActivatedEventArgs args)
+    {
+        _window = new MainWindow();
+        _window.Activate();
     }
 }
