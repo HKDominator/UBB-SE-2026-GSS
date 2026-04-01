@@ -214,9 +214,8 @@
                                         <Button
                                             Grid.Column="1"
                                             Content="Unarchive"
-                                            CommandParameter="{Binding}"
-                                            Command="{Binding DataContext.SetArchivedCommand,
-                                                ElementName=Root}" />
+                                            Tag="{Binding}"
+                                            Click="ArchiveButton_Click"/>
                                     </Grid>
                                 </Border>
                             </DataTemplate>
