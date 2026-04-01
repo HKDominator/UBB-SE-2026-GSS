@@ -61,17 +61,9 @@
             <ComboBox
                 Grid.Column="2"
                 PlaceholderText="Sort by"
+                ItemsSource="{Binding SortOptions}"
                 SelectedItem="{Binding SelectedSort, Mode=TwoWay}"
                 MinWidth="160">
-                <vm:SortOption>Default</vm:SortOption>
-                <vm:SortOption>TitleAscending</vm:SortOption>
-                <vm:SortOption>TitleDescending</vm:SortOption>
-                <vm:SortOption>CategoryAscending</vm:SortOption>
-                <vm:SortOption>CategoryDescending</vm:SortOption>
-                <vm:SortOption>StartDateAscending</vm:SortOption>
-                <vm:SortOption>StartDateDescending</vm:SortOption>
-                <vm:SortOption>EndDateAscending</vm:SortOption>
-                <vm:SortOption>EndDateDescending</vm:SortOption>
             </ComboBox>
 
             <Button

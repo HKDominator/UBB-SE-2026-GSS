@@ -14,6 +14,8 @@ namespace Events_GSS.ViewModels
 {
     public class AttendedEventViewModel : INotifyPropertyChanged
     {
+        public Array SortOptions => Enum.GetValues(typeof(SortOption));
+
         private readonly IAttendedEventService _attendedEventService;
         private readonly IUserService _userService;
 
