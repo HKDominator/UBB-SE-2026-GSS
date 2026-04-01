@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Text;
 
 using Events_GSS.Data.Database;
@@ -10,7 +11,7 @@ using Microsoft.Data.SqlClient;
 
 namespace Events_GSS.Data.Repositories;
 
-internal class QuestMemoryRepository : IQuestMemoryRepository
+public class QuestMemoryRepository : IQuestMemoryRepository
 {
     private readonly SqlConnectionFactory _connectionFactory;
 
@@ -55,15 +56,14 @@ internal class QuestMemoryRepository : IQuestMemoryRepository
 
     public async Task SubmitProofAsync(Quest quest, Memory proof)
     {
-        var connection = _connectionFactory.CreateConnection();
-
+        using SqlConnection connection = _connectionFactory.CreateConnection();
         try
         {
             await connection.OpenAsync();
 
             const string insertQuery = @"
-                    INSERT INTO QuestProofs (QuestId, MemoryId)
-                    VALUES (@QuestId, @MemoryId)";
+                INSERT INTO QuestMemories (QuestId, MemoryId)
+                VALUES (@QuestId, @MemoryId)";
 
             using SqlCommand cmd = new SqlCommand(insertQuery, connection);
             cmd.Parameters.AddWithValue("@QuestId", quest.Id);
@@ -73,66 +73,70 @@ internal class QuestMemoryRepository : IQuestMemoryRepository
         }
         catch (SqlException ex)
         {
-            Console.WriteLine($"SQL Exception: {ex.Message}");
+            Debug.WriteLine($"SQL Exception: {ex.Message}");
             throw;
         }
         catch (Exception ex)
         {
             throw new Exception("An unexpected error occurred while submitting the proof.", ex);
         }
-
     }
 
     public async Task<List<QuestMemory>> GetSubmissionsStatusForUser(List<Quest> quests, User user)
     {
         var proofs = new List<QuestMemory>();
+
+        if (quests.Count == 0) return proofs;
+
         using SqlConnection connection = _connectionFactory.CreateConnection();
         try
         {
             await connection.OpenAsync();
-            const string query = @"
-                (
-                SELECT qp.QuestId, qp.Status, qp.MemoryId
-                FROM  QuestMemories qp
-                WHERE qp.QuestId IN @Quests
-                )
-                INNER JOIN 
-                (
-                SELECT m.MemoryId
-                FROM Memories m
-                WHERE m.UserId = @UserId
-                ) 
-                ON qp.MemoryId = m.MemoryId                            
-                ";
+
+            
+            var questIds = quests.Select(q => q.Id).ToList();
+            var paramNames = questIds.Select((_, i) => $"@QuestId{i}").ToList();
+            var inClause = string.Join(",", paramNames);
+
+            string query = $@"
+                SELECT qm.QuestId, qm.Status, qm.MemoryId
+                FROM QuestMemories qm
+                INNER JOIN Memories m ON qm.MemoryId = m.MemoryId
+                WHERE qm.QuestId IN ({inClause})
+                AND m.UserId = @UserId";
+
             using SqlCommand cmd = new SqlCommand(query, connection);
 
-            cmd.Parameters.AddWithValue("@Quests", quests);
+            for (int i = 0; i < questIds.Count; i++)
+                cmd.Parameters.AddWithValue(paramNames[i], questIds[i]);
+
             cmd.Parameters.AddWithValue("@UserId", user.UserId);
 
             using SqlDataReader reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
+                QuestMemoryStatus proofStatus;
+                QuestMemoryStatus.TryParse((string)reader["Status"], out proofStatus);
                 proofs.Add(new QuestMemory
                 {
-                    ForQuest = quests.Find(q => q.Id == (int)reader["QuestId"]),
-                    Proof = null,
-                    ProofStatus = (QuestMemoryStatus)reader["Status"]
+                    ForQuest = quests.Find(q => q.Id == (int)reader["QuestId"])!,
+                    Proof = new Memory{MemoryId = (int)reader["MemoryId"]},
+                    ProofStatus = proofStatus
                 });
             }
         }
         catch (SqlException ex)
         {
-            Console.WriteLine($"SQL Exception: {ex.Message}");
+            Debug.WriteLine($"SQL Exception: {ex.Message}");
             throw;
         }
         catch (Exception ex)
         {
             throw new Exception("An unexpected error occurred while retrieving the proofs.", ex);
         }
-
+        Debug.WriteLine($"Retrieved {proofs.Count} proofs for user {user.UserId}");
         return proofs;
     }
-
 
     public async Task<List<QuestMemory>> GetProofsForQuestAsync(Quest quest)
     {
@@ -141,14 +145,17 @@ internal class QuestMemoryRepository : IQuestMemoryRepository
         try
         {
             await connection.OpenAsync();
+
             const string query = @"
-                SELECT qp.QuestMemoryId, qp.QuestId, qp.MemoryId,
+                SELECT qm.QuestMemoryId, qm.QuestId, qm.MemoryId,
                        m.UserId, m.PhotoPath, m.Text, m.CreatedAt
-                FROM QuestProofs qp
-                JOIN Memories m ON qp.MemoryId = m.MemoryId
-                WHERE qp.QuestId = @QuestId";
+                FROM QuestMemories qm
+                JOIN Memories m ON qm.MemoryId = m.MemoryId
+                WHERE qm.QuestId = @QuestId";
+
             using SqlCommand cmd = new SqlCommand(query, connection);
             cmd.Parameters.AddWithValue("@QuestId", quest.Id);
+
             using SqlDataReader reader = await cmd.ExecuteReaderAsync();
             while (await reader.ReadAsync())
             {
@@ -182,24 +189,26 @@ internal class QuestMemoryRepository : IQuestMemoryRepository
 
     public async Task ChangeProofStatusAsync(QuestMemory proof)
     {
-        var connection = _connectionFactory.CreateConnection();
+        using SqlConnection connection = _connectionFactory.CreateConnection();
         try
         {
             await connection.OpenAsync();
+
             const string updateQuery = @"
-                UPDATE QuestProofs
-                SET ProofStatus = @Status
+                UPDATE QuestMemories
+                SET Status = @Status
                 WHERE QuestId = @QuestId AND MemoryId = @MemoryId";
 
             using SqlCommand cmd = new SqlCommand(updateQuery, connection);
             cmd.Parameters.AddWithValue("@Status", proof.ProofStatus.ToString());
             cmd.Parameters.AddWithValue("@QuestId", proof.ForQuest.Id);
-            cmd.Parameters.AddWithValue("@MemoryId", proof.Proof.MemoryId);
+            cmd.Parameters.AddWithValue("@MemoryId", proof.Proof!.MemoryId);
+
             await cmd.ExecuteNonQueryAsync();
         }
         catch (SqlException ex)
         {
-            Console.WriteLine($"SQL Exception: {ex.Message}");
+            Debug.WriteLine($"SQL Exception: {ex.Message}");
             throw;
         }
         catch (Exception ex)
@@ -210,24 +219,24 @@ internal class QuestMemoryRepository : IQuestMemoryRepository
 
     public async Task DeleteProofAsync(QuestMemory proof)
     {
-        var connection = _connectionFactory.CreateConnection();
+        using SqlConnection connection = _connectionFactory.CreateConnection();
         try
         {
             await connection.OpenAsync();
+
             const string deleteQuery = @"
                 DELETE FROM QuestMemories
-                WHERE QuestId = @QuestId AND MemoryId = @MemoryId
-            ";
-            using SqlCommand cmd = new SqlCommand(deleteQuery, connection);
+                WHERE QuestId = @QuestId AND MemoryId = @MemoryId";
 
+            using SqlCommand cmd = new SqlCommand(deleteQuery, connection);
             cmd.Parameters.AddWithValue("@QuestId", proof.ForQuest.Id);
-            cmd.Parameters.AddWithValue("@MemoryId", proof.Proof.MemoryId);
+            cmd.Parameters.AddWithValue("@MemoryId", proof.Proof!.MemoryId);
 
             await cmd.ExecuteNonQueryAsync();
         }
         catch (SqlException ex)
         {
-            Console.WriteLine($"SQL Exception: {ex.Message}");
+            Debug.WriteLine($"SQL Exception: {ex.Message}");
             throw;
         }
         catch (Exception ex)
@@ -235,6 +244,4 @@ internal class QuestMemoryRepository : IQuestMemoryRepository
             throw new Exception("An unexpected error occurred while deleting the proof.", ex);
         }
     }
-
-
 }

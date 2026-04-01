@@ -82,8 +82,10 @@ public class QuestApprovalService: IQuestApprovalService
     {
         try
         {
-            await _memoryService.DeleteAsync(proof.Proof, user);
+            //proof.Proof does not exist in current context.
             await _approvalRepository.DeleteProofAsync(proof);
+            await _memoryService.DeleteAsync(proof.Proof, user);
+            
         }
         catch (Exception exc)
         {

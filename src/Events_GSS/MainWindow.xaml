@@ -13,9 +13,9 @@
         <MicaBackdrop />
     </Window.SystemBackdrop>
 
-    <Grid>
-        <views:MemoryView x:Name="MemoriesView" 
-                  ViewModel="{x:Bind MemoriesViewModel}" />
-
-    </Grid>
+    <!-- <Grid> -->
+    <!--      -->
+    <!-- -->
+    <!-- </Grid> -->
+    <views:QuestUserPage x:Name="QuestUserPage" />
 </Window>

@@ -23,6 +23,8 @@ using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Repositories.Interfaces;
 using Events_GSS.Data.Services;
 using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.Services;
+using Events_GSS.Services.Interfaces;
 
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
@@ -57,8 +59,17 @@ namespace Events_GSS
 
             services.AddTransient<IQuestRepository,QuestRepository>();
             services.AddTransient<IQuestService,QuestService>();
+
             services.AddTransient<IMemoryRepository,MemoryRepository>();
             services.AddTransient<IMemoryService,MemoryService>();
+
+            services.AddTransient<IQuestMemoryRepository, QuestMemoryRepository>();
+            services.AddTransient<IQuestApprovalService, QuestApprovalService>();
+
+            services.AddTransient<IAttendedEventRepository, AttendedEventRepository>();
+            services.AddTransient<IAttendedEventService, AttendedEventService>();
+
+            services.AddTransient<IUserService, MockUserService>();
 
             Services = services.BuildServiceProvider();
         }

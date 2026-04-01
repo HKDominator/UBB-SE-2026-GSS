@@ -1,9 +1,12 @@
+using System.Diagnostics;
+
 using Events_GSS.Data.Database;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Repositories.Interfaces;
 using Events_GSS.Data.Services;
 using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.Services.Interfaces;
 using Events_GSS.ViewModels;
 
 using Microsoft.Extensions.Configuration;
@@ -16,29 +19,32 @@ namespace Events_GSS;
 public sealed partial class MainWindow : Window
 {
  //   public QuestAdminViewModel QuestViewModel { get; }
-    public MemoryViewModel MemoriesViewModel { get; }
-
+    //public MemoryViewModel MemoriesViewModel { get; }
     public MainWindow()
     {
         InitializeComponent();
 
      //   IQuestService qs = App.Services.GetRequiredService<IQuestService>();
-        IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
-
-
+     //   IMemoryService memoryService = App.Services.GetRequiredService<IMemoryService>();
+        IQuestApprovalService questApprovalService= App.Services.GetRequiredService<IQuestApprovalService>();
+        
+        IUserService userService =App.Services.GetRequiredService<IUserService>();
         // TODO: PlaceHolder for event data, replace when navigation is implemented
         var currentUser = new User { UserId = 1 };
         var currentUser2 = new User { UserId = 2 };
         var currentEvent = new Event { EventId = 1, Admin = currentUser };
-        
-     
 
-     //   QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
-        MemoriesViewModel = new MemoryViewModel(memoryService);
+        var vm = new QuestUserViewModel(currentEvent, questApprovalService, userService);
+        QuestUserPage.ViewModel = vm;
+
+        //   QuestViewModel = new QuestAdminViewModel(currentEvent, qs);
+        //   MemoriesViewModel = new MemoryViewModel(memoryService);
+
         this.Activated += async (s, e) =>
         {
-            await MemoriesView.LoadAsync(currentEvent, currentUser);
+            //await MemoriesView.LoadAsync(currentEvent, currentUser);
+            
         };
-
+        
     }
 }
