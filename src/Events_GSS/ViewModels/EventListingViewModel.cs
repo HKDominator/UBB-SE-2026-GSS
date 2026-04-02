@@ -10,6 +10,7 @@ using Events_GSS.Data.Models;
 using Events_GSS.Data.Services.categoryServices;
 using Events_GSS.Data.Services.eventServices;
 using Events_GSS.UIServices;
+using Events_GSS.Services;
 
 using Microsoft.UI.Xaml;
 
@@ -20,7 +21,7 @@ public partial class EventListingViewModel : ObservableObject
 {
     private readonly IEventService _service;
     private readonly ICategoryServices _categoryServices;
-    private readonly INavigationServices _navigation;
+    private readonly INavigationService _navigation;
 
     private List<Event> _allEvents = new();
 
@@ -54,7 +55,7 @@ public partial class EventListingViewModel : ObservableObject
     public EventListingViewModel(
         IEventService service,
         ICategoryServices categoryService,
-        INavigationServices navigation)
+        INavigationService navigation)
     {
         _service = service;
         _categoryServices = categoryService;
