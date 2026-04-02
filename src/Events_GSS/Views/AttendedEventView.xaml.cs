@@ -1,4 +1,5 @@
 using Events_GSS.Data.Models;
+using Events_GSS.Data.Services.notificationServices;
 using Events_GSS.Services;
 using Events_GSS.Services.Interfaces;
 using Events_GSS.ViewModels;
@@ -66,6 +67,14 @@ namespace Events_GSS.Views
             }
         }
 
+        private async void TestNotification_Click(object sender, RoutedEventArgs e)
+        {
+            var notificationService = App.Services.GetRequiredService<INotificationService>();
+            var userService = App.Services.GetRequiredService<IUserService>();
+            var currentUser = userService.GetCurrentUser();
+
+            await notificationService.NotifyAsync(currentUser.UserId, "Test!", "This is a test notification.");
+        }
         private async void FriendBox_Chosen(AutoSuggestBox sender, AutoSuggestBoxSuggestionChosenEventArgs args)
         {
             if (args.SelectedItem is User friend)

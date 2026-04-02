@@ -34,6 +34,9 @@
                     FontSize="14"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}"
                     VerticalAlignment="Center"/>
+                <Button
+                Content="Test Notification"
+                Click="TestNotification_Click" />
             </StackPanel>
         </Grid>
 
