@@ -26,5 +26,12 @@ namespace Events_GSS.ViewModels
             _userService = userService;
             _notificationService = notificationService;
         }
+
+        public async Task LoadAsync()
+        {
+            var currentUser = _userService.GetCurrentUser();
+            var notifications = await _notificationService.GetNotificationsAsync(currentUser.UserId);
+            Notifications = new ObservableCollection<Notification>(notifications);
+        }
     }
 }
