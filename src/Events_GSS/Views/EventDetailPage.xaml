@@ -31,6 +31,20 @@
                     Style="{ThemeResource CaptionTextBlockStyle}"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
+
+            <Button
+                x:Name="StatisticsButton"
+                Grid.Column="1"
+                HorizontalAlignment="Right"
+                VerticalAlignment="Center"
+                Margin="0,0,16,0"
+                Click="OnStatisticsClicked"
+                Visibility="Collapsed">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <FontIcon Glyph="&#xE9D9;" FontSize="16" />
+                    <TextBlock Text="Statistics" />
+                </StackPanel>
+            </Button>
         </Grid>
 
         <!-- ── Tabs ────────────────────────────────────────── -->

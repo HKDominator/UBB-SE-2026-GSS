@@ -8,12 +8,14 @@ using Events_GSS.Data.Repositories.categoriesRepository;
 using Events_GSS.Data.Repositories.eventRepository;
 using Events_GSS.Data.Repositories.notificationRepository;
 using Events_GSS.Data.Repositories.reputationRepository;
+using Events_GSS.Data.Repositories.eventStatisticsRepository;
 
 using Events_GSS.Data.Services;
 using Events_GSS.Data.Services.announcementServices;
 using Events_GSS.Data.Services.categoryServices;
 using Events_GSS.Data.Services.discussionService;
 using Events_GSS.Data.Services.eventServices;
+using Events_GSS.Data.Services.eventStatisticsServices;
 using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Data.Services.notificationServices;
 using Events_GSS.Data.Services.reputationService;
@@ -61,6 +63,7 @@ public partial class App : Application
         services.AddTransient<INotificationRepository, NotificationRepository>();
         services.AddTransient<IReputationRepository, ReputationRepository>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
+        services.AddTransient<IEventStatisticsRepository, EventStatisticsRepository>();
 
         services.AddTransient<IEventService, EventService>();
         services.AddTransient<ICategoryServices, CategoryServices>();
@@ -73,6 +76,7 @@ public partial class App : Application
         services.AddTransient<IUserService, MockUserService>();
         services.AddTransient<INotificationService, NotificationService>();
         services.AddSingleton<IReputationService, ReputationService>();
+        services.AddTransient<IEventStatisticsService, EventStatisticsService>();
 
         var navService = new NavigationService();
         navService.RegisterPage(PageKeys.EventListing, typeof(EventListingPage));
@@ -81,6 +85,7 @@ public partial class App : Application
         navService.RegisterPage(PageKeys.EventDetail, typeof(EventDetailPage));
         navService.RegisterPage(PageKeys.CreateEvent, typeof(CreateEventPage));
         navService.RegisterPage(PageKeys.Notifications, typeof(NotificationView));
+        navService.RegisterPage(PageKeys.EventStatistics, typeof(EventStatisticsPage));
         services.AddSingleton<INavigationService>(navService);
 
         Services = services.BuildServiceProvider();

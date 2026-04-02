@@ -9,6 +9,7 @@ using Microsoft.UI.Xaml;
 
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Services.eventServices;
+using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Services.Interfaces;
 
 namespace Events_GSS.ViewModels;
@@ -17,11 +18,13 @@ public partial class CreateEventViewModel : ObservableObject
 {
     private readonly IUserService _userService;
     private readonly IEventService _eventService;
+    private readonly IQuestService _questService;
 
-    public CreateEventViewModel(IUserService userService, IEventService eventService)
+    public CreateEventViewModel(IUserService userService, IEventService eventService, IQuestService questService)
     {
         _userService = userService;
         _eventService = eventService;
+        _questService = questService;
     }
 
     //VM1
@@ -238,7 +241,14 @@ public event Action<CreateEventDto?>? CloseRequested;
             Category = dto.Category,
             Admin = dto.Admin!,
         };
-        await _eventService.CreateEventAsync(eventEntity);
+        int newEventId = await _eventService.CreateEventAsync(eventEntity);
+        eventEntity.EventId = newEventId;
+
+        foreach (var quest in dto.SelectedQuests)
+        {
+            await _questService.AddQuestAsync(eventEntity, quest);
+        }
+
         CloseRequested?.Invoke(dto);
     }
 
@@ -262,7 +272,7 @@ public event Action<CreateEventDto?>? CloseRequested;
         };
     }
 
-    public async System.Threading.Tasks.Task LoadPresetQuestsAsync(Events_GSS.Data.Services.QuestService questService)
+    public async System.Threading.Tasks.Task LoadPresetQuestsAsync(IQuestService questService)
     {
         var quests = await questService.GetPresetQuestsAsync();
         AvailableQuests.Clear();
