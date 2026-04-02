@@ -45,4 +45,17 @@ public class AchievementRepository : IAchievementRepository
 
         return achievements;
     }
+
+    public async Task UnlockAchievementAsync(int userId, int achievementId)
+    {
+        using var conn = _factory.CreateConnection();
+        await conn.OpenAsync();
+        var cmd = new SqlCommand(@"
+            IF NOT EXISTS (SELECT 1 FROM UserAchievements WHERE UserId = @UserId AND AchievementId = @AchievementId)
+                INSERT INTO UserAchievements (UserId, AchievementId) VALUES (@UserId, @AchievementId);", conn);
+        cmd.Parameters.AddWithValue("@UserId", userId);
+        cmd.Parameters.AddWithValue("@AchievementId", achievementId);
+        await cmd.ExecuteNonQueryAsync();
+    }
+
 }

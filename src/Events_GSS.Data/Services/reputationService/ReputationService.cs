@@ -70,6 +70,7 @@ public class ReputationService : IReputationService
                 await HandleEventAttendedAsync(message.EventId!.Value);
                 return;
             }
+            //TODO Quest approval, denied, submitted handling, messages are sent
 
             if (RpDeltas.TryGetValue(message.Value, out int delta))
             {
