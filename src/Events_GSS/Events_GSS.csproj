@@ -21,6 +21,7 @@
     <None Remove="Views\AttendedEventView.xaml" />
     <None Remove="Views\EventDetailPage.xaml" />
     <None Remove="Views\EventListingPage.xaml" />
+    <None Remove="Views\NotificationView.xaml" />
     <None Remove="Views\QuestAdminControl.xaml" />
   </ItemGroup>
   <ItemGroup>
@@ -74,6 +75,9 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\NotificationView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\CreateEventPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
