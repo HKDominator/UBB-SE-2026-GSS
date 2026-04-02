@@ -299,6 +299,19 @@
                                     <TextBlock Text="Pin" />
                                 </StackPanel>
                             </Button>
+
+                            <!-- Admin-only: Read Receipts (REQ-ANN-07) -->
+                            <Button
+                                FontSize="12"
+                                Padding="6,2"
+                                Tag="{x:Bind}"
+                                Visibility="{x:Bind IsCurrentUserAdmin, Converter={StaticResource BoolToVisibility}}"
+                                Click="OnReadReceiptsClicked">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon Glyph="&#xE8C3;" FontSize="12" />
+                                    <TextBlock Text="Read receipts" />
+                                </StackPanel>
+                            </Button>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
