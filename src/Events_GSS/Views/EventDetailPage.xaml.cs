@@ -16,6 +16,7 @@ namespace Events_GSS.Views;
 public sealed partial class EventDetailPage : Page
 {
     private INavigationService? _nav;
+    private Event? _currentEvent;
 
     public EventDetailPage()
     {
@@ -30,6 +31,7 @@ public sealed partial class EventDetailPage : Page
 
         if (e.Parameter is not Event ev) return;
 
+        _currentEvent = ev;
         EventNameText.Text = ev.Name;
         EventInfoText.Text = $"{ev.StartDateTime:MMM dd, yyyy HH:mm} • {ev.Location}";
 
@@ -55,6 +57,11 @@ public sealed partial class EventDetailPage : Page
         {
             QuestAdminTab.Visibility = Visibility.Visible;
             QuestUserTab.Visibility = Visibility.Collapsed;
+            StatsButton.Visibility = Visibility.Visible;
+        }
+        else
+        {
+            StatsButton.Visibility = Visibility.Collapsed;
         }
 
         var memService = App.Services.GetRequiredService<IMemoryService>();
@@ -66,5 +73,11 @@ public sealed partial class EventDetailPage : Page
     private void OnBackClicked(object sender, RoutedEventArgs e)
     {
         _nav?.GoBack();
+    }
+
+    private void OnStatsClicked(object sender, RoutedEventArgs e)
+    {
+        if (_currentEvent is null) return;
+        _nav?.NavigateTo(PageKeys.Statistics, _currentEvent);
     }
 }

@@ -11,7 +11,7 @@
             Grid.Row="0"
             Padding="16,12"
             Background="{ThemeResource LayerOnMicaBaseAltFillColorDefaultBrush}"
-            ColumnDefinitions="Auto,*">
+            ColumnDefinitions="Auto,*,Auto">
 
             <Button
                 Grid.Column="0"
@@ -31,6 +31,15 @@
                     Style="{ThemeResource CaptionTextBlockStyle}"
                     Foreground="{ThemeResource TextFillColorSecondaryBrush}" />
             </StackPanel>
+
+            <Button
+                Grid.Column="2"
+                x:Name="StatsButton"
+                Content="View statistics"
+                VerticalAlignment="Center"
+                Margin="12,0,0,0"
+                Visibility="Collapsed"
+                Click="OnStatsClicked" />
         </Grid>
 
         <!-- ── Tabs ────────────────────────────────────────── -->
