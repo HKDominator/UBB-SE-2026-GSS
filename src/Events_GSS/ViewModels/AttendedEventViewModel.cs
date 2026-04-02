@@ -10,6 +10,8 @@ using Events_GSS.Services.Interfaces;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 
+using Events_GSS.Data.Services.announcementServices;
+
 namespace Events_GSS.ViewModels
 {
     public class AttendedEventViewModel : INotifyPropertyChanged
@@ -153,7 +155,9 @@ namespace Events_GSS.ViewModels
 
         // ─── Constructor ──────────────────────────────────────────────────
 
-        public AttendedEventViewModel(IAttendedEventService attendedEventService, IUserService userService)
+        private readonly IAnnouncementService _announcementService;
+
+        public AttendedEventViewModel(IAttendedEventService attendedEventService, IUserService userService, IAnnouncementService announcementService)
         {
             _attendedEventService = attendedEventService;
             _userService = userService;
@@ -163,6 +167,7 @@ namespace Events_GSS.ViewModels
             SetArchivedCommand = new RelayCommandAttEv(async p => await SetArchivedAsync(p), p => p is AttendedEvent);
             SetFavouriteCommand = new RelayCommandAttEv(async p => await SetFavouriteAsync(p), p => p is AttendedEvent);
             ClearFiltersCommand = new RelayCommandAttEv(_ => ClearFilters());
+            _announcementService = announcementService;
         }
 
         // ─── Load ─────────────────────────────────────────────────────────
@@ -188,6 +193,12 @@ namespace Events_GSS.ViewModels
 
                 AvailableCategories = new ObservableCollection<Category>(categories);
                 FilteredFriends = new ObservableCollection<User>(_userService.GetFriends(CurrentUser.UserId));
+
+                var unreadCounts = await _announcementService.GetUnreadCountsForUserAsync(CurrentUser.UserId);
+                foreach( var ae in _allEvents)
+                {
+                    ae.UnreadAnnouncementCount = unreadCounts.TryGetValue(ae.Event.EventId, out var count) ? count : 0;
+                }
 
                 ApplyFiltersAndSort();
 

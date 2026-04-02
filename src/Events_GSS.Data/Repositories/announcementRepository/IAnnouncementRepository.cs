@@ -25,6 +25,8 @@ public interface IAnnouncementRepository
     Task MarkAsReadAsync(int announcementId, int userId);
     Task<List<AnnouncementReadReceipt>> GetReadReceiptsAsync(int announcementId);
     Task<int> GetTotalParticipantsAsync(int eventId);
+    Task<Dictionary<int, int>> GetUnreadCountsForUserAsync(int userId);
+    Task<List<User>> GetAllParticipantsAsync(int eventId);
 
     // ── Reactions ─────────────────────────────────────────
 

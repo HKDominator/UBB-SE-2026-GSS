@@ -354,4 +354,63 @@ public class AnnouncementRepository : IAnnouncementRepository
         var result = await cmd.ExecuteScalarAsync();
         return Convert.ToInt32(result);
     }
+
+    public async Task<Dictionary<int, int>> GetUnreadCountsForUserAsync(int userId)
+    {
+        var counts = new Dictionary<int, int>();
+
+        using var conn = _connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+
+        // For every event the user attends, count announcements they haven't read
+        const string query = @"
+            SELECT a.EventId, COUNT(*) AS UnreadCount
+            FROM Announcements a
+            INNER JOIN AttendedEvents ae ON a.EventId = ae.EventId AND ae.UserId = @UserId
+            LEFT JOIN AnnouncementReadReceipts r ON a.AnnId = r.AnnouncementId AND r.UserId = @UserId
+            WHERE r.Id IS NULL
+            GROUP BY a.EventId";
+
+        using var cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@UserId", userId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            counts[reader.GetInt32(0)] = reader.GetInt32(1);
+        }
+
+        return counts;
+    }
+
+    public async Task<List<User>> GetAllParticipantsAsync(int eventId)
+    {
+        var users = new List<User>();
+
+        using var conn = _connectionFactory.CreateConnection();
+        await conn.OpenAsync();
+
+        const string query = @"
+            SELECT u.Id, u.Name
+            FROM AttendedEvents ae
+            INNER JOIN Users u ON ae.UserId = u.Id
+            WHERE ae.EventId = @EventId
+            ORDER BY u.Name";
+
+        using var cmd = new SqlCommand(query, conn);
+        cmd.Parameters.AddWithValue("@EventId", eventId);
+
+        using var reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            users.Add(new User
+            {
+                UserId = reader.GetInt32(reader.GetOrdinal("Id")),
+                Name = reader.GetString(reader.GetOrdinal("Name"))
+            });
+        }
+
+        return users;
+    }
+
 }

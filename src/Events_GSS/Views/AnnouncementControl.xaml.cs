@@ -6,6 +6,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 
 using Events_GSS.ViewModels;
+using Events_GSS.Data.Models;
 
 namespace Events_GSS.Views;
 
@@ -128,33 +129,58 @@ public sealed partial class AnnouncementControl : UserControl
             || !ViewModel.IsEventAdmin)
             return;
 
-        // Load the receipts
+        // Load read receipts + all participants
         await ViewModel.LoadReadReceiptsCommand.ExecuteAsync(item);
 
-        // Build the dialog content
+        List<User> allParticipants;
+        try
+        {
+            var service = ViewModel.GetAnnouncementService();
+            allParticipants = await service.GetAllParticipantsAsync(ViewModel.GetEventId());
+        }
+        catch
+        {
+            allParticipants = new List<User>();
+        }
+
+        // Compute non-readers
+        var readerIds = new HashSet<int>(
+            ViewModel.ReadReceiptUsers.Select(r => r.User.UserId));
+        var nonReaders = allParticipants
+            .Where(p => !readerIds.Contains(p.UserId))
+            .ToList();
+
+        // Build dialog
         var panel = new StackPanel { Spacing = 8 };
 
-        // Summary line
+        // Summary
         panel.Children.Add(new TextBlock
         {
             Text = ViewModel.ReadReceiptSummary,
             Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"]
         });
 
-        // Readers list
+        // ── Readers section ──
+        panel.Children.Add(new TextBlock
+        {
+            Text = $"Read ({ViewModel.ReadReceiptUsers.Count}):",
+            Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+            FontSize = 13,
+            Margin = new Thickness(0, 12, 0, 4)
+        });
+
         if (ViewModel.ReadReceiptUsers.Count > 0)
         {
-            panel.Children.Add(new TextBlock
-            {
-                Text = "Read by:",
-                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
-                FontSize = 13,
-                Margin = new Thickness(0, 8, 0, 0)
-            });
-
             foreach (var receipt in ViewModel.ReadReceiptUsers)
             {
                 var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+                row.Children.Add(new FontIcon
+                {
+                    Glyph = "\uE73E", // Checkmark
+                    FontSize = 12,
+                    Foreground = new SolidColorBrush(Microsoft.UI.Colors.Green),
+                    VerticalAlignment = VerticalAlignment.Center
+                });
                 row.Children.Add(new TextBlock
                 {
                     Text = receipt.User.Name,
@@ -177,6 +203,46 @@ public sealed partial class AnnouncementControl : UserControl
                 Text = "No one has read this announcement yet.",
                 FontStyle = Windows.UI.Text.FontStyle.Italic,
                 Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+            });
+        }
+
+        // ── Non-readers section ──
+        panel.Children.Add(new TextBlock
+        {
+            Text = $"Not yet read ({nonReaders.Count}):",
+            Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+            FontSize = 13,
+            Margin = new Thickness(0, 12, 0, 4)
+        });
+
+        if (nonReaders.Count > 0)
+        {
+            foreach (var user in nonReaders)
+            {
+                var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+                row.Children.Add(new FontIcon
+                {
+                    Glyph = "\uE711", // X mark
+                    FontSize = 12,
+                    Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+                row.Children.Add(new TextBlock
+                {
+                    Text = user.Name,
+                    Style = (Style)Application.Current.Resources["BodyTextBlockStyle"],
+                    Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+                });
+                panel.Children.Add(row);
+            }
+        }
+        else
+        {
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Everyone has read this announcement!",
+                FontStyle = Windows.UI.Text.FontStyle.Italic,
+                Foreground = new SolidColorBrush(Microsoft.UI.Colors.Green)
             });
         }
 

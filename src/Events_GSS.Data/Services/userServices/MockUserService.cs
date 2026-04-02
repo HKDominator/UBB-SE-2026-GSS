@@ -34,7 +34,7 @@ namespace Events_GSS.Services
         };
 
         // The currently logged-in user — change UserId to simulate a different user
-        private static readonly int _currentUserId = 1;
+        private static readonly int _currentUserId = 2;
 
         /// <summary>
         /// Returns the currently logged-in user.
