@@ -68,6 +68,7 @@ public class ReputationService : IReputationService
             if (message.Value == ReputationAction.EventAttended)
             {
                 await HandleEventAttendedAsync(message.EventId!.Value);
+                await _achievementRepo.CheckAndAwardAchievementsAsync(message.UserId);
                 return;
             }
             //TODO Quest approval, denied, submitted handling, messages are sent
@@ -75,6 +76,7 @@ public class ReputationService : IReputationService
             if (RpDeltas.TryGetValue(message.Value, out int delta))
             {
                 await _reputationRepo.UpdateReputationAsync(message.UserId, delta);
+                await _achievementRepo.CheckAndAwardAchievementsAsync(message.UserId);
             }
         }
         catch (Exception)
