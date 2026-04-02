@@ -8,17 +8,19 @@ using Events_GSS.Data.Messaging;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.Services.Interfaces;
 
 namespace Events_GSS.Data.Services
 {
     public class MemoryService : IMemoryService
     {
         private readonly IMemoryRepository _memoryRepo;
-        //IAttendedEvents ....
+        private readonly IAttendedEventRepository _attendedEventRepo;
 
-        public MemoryService(IMemoryRepository memoryRepo)
+        public MemoryService(IMemoryRepository memoryRepo, IAttendedEventRepository attEveRepo)
         {
             _memoryRepo = memoryRepo;
+            _attendedEventRepo = attEveRepo;
         }
 
         public async Task<List<Memory>> GetByEventAsync(Event forEvent, User currentUser)
@@ -59,9 +61,13 @@ namespace Events_GSS.Data.Services
 
         public async Task AddAsync(Event forEvent, User author, string? photoPath, string? text)
         {
+            var attendance = await _attendedEventRepo.GetAsync(forEvent.EventId, author.UserId);
+            if (attendance == null)
+                throw new InvalidOperationException("You must first enroll to this event!.");
+
             bool hasPhoto = !string.IsNullOrWhiteSpace(photoPath);
             bool hasText = !string.IsNullOrWhiteSpace(text);
-            //check if user is in attended events, if no exception
+
 
             if (!hasPhoto && !hasText)
                 throw new InvalidOperationException("A memory must have at least a photo or text.");

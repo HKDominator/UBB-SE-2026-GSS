@@ -31,7 +31,7 @@ namespace Events_GSS.Data.Repositories
             {
                 UserId = (int)reader["AdminId"],
                 Name = (string)reader["AdminName"],
-                ReputationPoints = (int)reader["AdminRP"]
+                ReputationPoints = reader["AdminRP"] == DBNull.Value ? 0 : (int)reader["AdminRP"]
             };
 
             var ev = new Event
@@ -54,7 +54,7 @@ namespace Events_GSS.Data.Repositories
             {
                 UserId = (int)reader["UserId"],
                 Name = (string)reader["UserName"],
-                ReputationPoints = (int)reader["ReputationPoints"]
+                ReputationPoints = reader["ReputationPoints"] == DBNull.Value ? 0 : (int)reader["ReputationPoints"]
             };
 
             return new AttendedEvent(ev, user,
@@ -202,7 +202,7 @@ namespace Events_GSS.Data.Repositories
             // We join AttendedEvents twice — once for the current user, once for the friend —
             // and return the current user's AttendedEvent rows for the matching events.
             string query = SelectBase + @"
-                INNER JOIN AttendedEvents ae2 ON e.Id = ae2.EventId
+                INNER JOIN AttendedEvents ae2 ON e.EventId = ae2.EventId
                 WHERE ae.UserId = @UserId AND ae2.UserId = @FriendId";
 
             using var connection = _factory.CreateConnection();

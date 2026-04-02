@@ -143,8 +143,8 @@ public class EventRepository: IEventRepository
 
         Category=reader.IsDBNull("CatId") ? null : new Category
         {
-            CategoryId = (int)reader["CategoryId"],
-            Title = (string)reader["CategoryTitle"]
+            CategoryId = reader.GetInt32("CatId"),
+            Title = reader.GetString("CategoryTitle")
         },
         Admin =reader.IsDBNull("UserId") ? null : new User
         {

@@ -4,6 +4,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 using Events_GSS.ViewModels;
 using Events_GSS.Services;
+
+using Microsoft.Extensions.DependencyInjection;
 using Events_GSS.Data.Services.eventServices;
 using Events_GSS.Services.Interfaces;
 
