@@ -11,11 +11,11 @@
     xmlns:converters="using:Events_GSS.Converters"
     x:Name="Root">
 
-    <Page.Resources>
+    <UserControl.Resources>
         <converters:NullToVisibilityConverter x:Key="NullToVisibilityConverter"/>
         <converters:BoolToInverseVisibilityConverter x:Key="BoolToInverseVisibilityConverter"/>
         <converters:ZeroToVisibilityConverter x:Key="ZeroToVisibilityConverter"/>
-    </Page.Resources>
+    </UserControl.Resources>
     
     <Grid RowDefinitions="Auto,*" Padding="24" RowSpacing="16">
 
