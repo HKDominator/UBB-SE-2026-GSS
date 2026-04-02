@@ -7,7 +7,7 @@ public interface IEventService
 {
     Task<List<Event>> GetAllPublicActiveEventsAsync();
     Task<Event?> GetEventByIdAsync(int eventId);
-    Task CreateEventAsync(Event eventEntity);
+    Task<int> CreateEventAsync(Event eventEntity);
     Task UpdateEventAsync(Event eventEntity);
     Task DeleteEventAsync(int eventId);
 

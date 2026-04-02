@@ -24,14 +24,15 @@ public class EventService: IEventService
     public async Task<Event?> GetEventByIdAsync(int eventId)
         => await _eventRepository.GetByIdAsync(eventId);
 
-    public async Task CreateEventAsync(Event eventEntity)
+    public async Task<int> CreateEventAsync(Event eventEntity)
     {
         if (!await _reputationService.CanCreateEventsAsync(eventEntity.Admin.UserId))
             throw new InvalidOperationException("Your reputation is too low to create events (below -700 RP).");
 
-        await _eventRepository.AddAsync(eventEntity);
+        int eventId = await _eventRepository.AddAsync(eventEntity);
         WeakReferenceMessenger.Default.Send(
             new ReputationMessage(eventEntity.Admin.UserId, ReputationAction.EventCreated));
+        return eventId;
     }
 
     public async Task UpdateEventAsync(Event eventEntity)

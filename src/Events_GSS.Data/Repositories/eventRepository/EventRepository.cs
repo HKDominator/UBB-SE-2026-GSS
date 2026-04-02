@@ -59,7 +59,7 @@ public class EventRepository: IEventRepository
         return await reader.ReadAsync() ? MapEvent(reader) : null;
     }
 
-    public async Task AddAsync(Event eventEntity)
+    public async Task<int> AddAsync(Event eventEntity)
     {
         using var conn = _connectionFactory.CreateConnection();
         await conn.OpenAsync();
@@ -68,6 +68,7 @@ public class EventRepository: IEventRepository
             INSERT INTO Events 
                 (Name, Location, StartDateTime, EndDateTime, 
                  IsPublic, Description, MaximumPeople, EventBannerPath, CategoryId, AdminId)
+            OUTPUT INSERTED.EventId
             VALUES 
                 (@Name, @Location, @Start, @End,
                  @IsPublic, @Desc, @MaxPeople, @Banner, @CategoryId, @AdminId)", conn);
@@ -83,7 +84,8 @@ public class EventRepository: IEventRepository
         cmd.Parameters.AddWithValue("@CategoryId", (object?)eventEntity.Category?.CategoryId ?? DBNull.Value);
         cmd.Parameters.AddWithValue("@AdminId", eventEntity.Admin?.UserId ?? throw new ArgumentNullException("AdminId is required"));
 
-        await cmd.ExecuteNonQueryAsync();
+        var result = await cmd.ExecuteScalarAsync();
+        return Convert.ToInt32(result);
     }
 
     public async Task UpdateAsync(Event eventEntity)
