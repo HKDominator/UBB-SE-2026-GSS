@@ -33,5 +33,11 @@ namespace Events_GSS.ViewModels
             var notifications = await _notificationService.GetNotificationsAsync(currentUser.UserId);
             Notifications = new ObservableCollection<Notification>(notifications);
         }
+
+        public async Task DeleteAsync(Notification notification)
+        {
+            await _notificationService.DeleteAsync(notification.Id);
+            Notifications.Remove(notification);
+        }
     }
 }
