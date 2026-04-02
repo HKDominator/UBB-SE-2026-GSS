@@ -34,9 +34,32 @@ public partial class AnnouncementViewModel : ObservableObject
         IsEventAdmin = isAdmin;
 
         Announcements = new ObservableCollection<AnnouncementItemViewModel>();
+        ReadReceiptUsers = new ObservableCollection<AnnouncementReadReceipt>();
     }
 
     public ObservableCollection<AnnouncementItemViewModel> Announcements { get; }
+    public ObservableCollection<AnnouncementReadReceipt> ReadReceiptUsers { get; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ReadReceiptSummary))]
+    private int _readReceiptReadCount;
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(ReadReceiptSummary))]
+    private int _readReceiptTotalCount;
+
+    [ObservableProperty]
+    private bool _isReadReceiptsLoading;
+
+    public string ReadReceiptSummary
+    {
+        get
+        {
+            if (ReadReceiptTotalCount == 0) return "No participants";
+            int pct = (int)Math.Round(100.0 * ReadReceiptReadCount / ReadReceiptTotalCount);
+            return $"{ReadReceiptReadCount} / {ReadReceiptTotalCount} read ({pct}%)";
+        }
+    }
 
     [ObservableProperty]
     [NotifyPropertyChangedFor(nameof(IsNotLoading))]
@@ -185,6 +208,34 @@ public partial class AnnouncementViewModel : ObservableObject
             {
                 System.Diagnostics.Debug.WriteLine($"Mark as read failed: {ex.Message}");
             }
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadReadReceiptsAsync(AnnouncementItemViewModel? item)
+    {
+        if (item is null || !IsEventAdmin) return;
+
+        IsReadReceiptsLoading = true;
+        try
+        {
+            var (readers, total) = await _service.GetReadReceiptsAsync(
+                item.Id, _event.EventId, _currentUserId);
+
+            ReadReceiptUsers.Clear();
+            foreach (var r in readers)
+                ReadReceiptUsers.Add(r);
+
+            ReadReceiptReadCount = readers.Count;
+            ReadReceiptTotalCount = total;
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Read receipts failed: {ex.Message}");
+        }
+        finally
+        {
+            IsReadReceiptsLoading = false;
         }
     }
 
