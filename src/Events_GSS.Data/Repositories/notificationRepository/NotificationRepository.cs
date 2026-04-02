@@ -42,7 +42,7 @@ namespace Events_GSS.Data.Repositories.notificationRepository
             SELECT n.Id, n.Title, n.Description, n.CreatedAt, u.Id AS UserId, u.Name AS UserName,urp.ReputationPoints
             FROM Notifications n
             INNER JOIN Users u ON n.UserId = u.Id
-            LEFT JOIN users_RP_scores urp ON u.UserID = urp.UserId
+            LEFT JOIN users_RP_scores urp ON u.Id = urp.UserId
             WHERE n.UserId = @UserId";
 
             using var connection = _factory.CreateConnection();
