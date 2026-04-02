@@ -20,6 +20,8 @@ DBCC CHECKIDENT ('Events', RESEED, 0);
 DBCC CHECKIDENT ('Memories', RESEED, 0);
 DBCC CHECKIDENT ('Announcements', RESEED, 0);
 DBCC CHECKIDENT ('Discussions', RESEED, 0);
+DBCC CHECKIDENT ('Quests', RESEED, 0);
+DBCC CHECKIDENT ('QuestMemories', RESEED, 0);
 
 SET IDENTITY_INSERT Users ON;
 
@@ -87,3 +89,5 @@ VALUES
 (1, 'Photo Challenge', 'Take a creative photo at the event and share it in the memories!', 2),
 (2, 'Book Trivia', 'Answer trivia question: who inspired the worldbuildinng of the book?.', 1),
 (3, 'Flower Master', 'Find and share a beautiful photo of flowers.', 3);
+
+INSERT INTO QuestMemories (QuestId, MemoryId) VALUES (1, 1);
