@@ -55,6 +55,11 @@ namespace Events_GSS.Services
             await _repo.DeleteAsync(eventId, userId);
         }
 
+        public async Task<AttendedEvent?> GetAsync(int eventId, int userId)
+        {
+            return await _repo.GetAsync(eventId, userId);
+        }
+
         public async Task SetArchivedAsync(int eventId, int userId, bool isArchived)
         {
             await _repo.UpdateIsArchivedAsync(eventId, userId, isArchived);
