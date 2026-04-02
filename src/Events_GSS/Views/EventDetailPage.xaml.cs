@@ -51,7 +51,7 @@ public sealed partial class EventDetailPage : Page
         _attendedService = App.Services.GetService<IAttendedEventService>();
         if (_attendedService != null)
         {
-            var existing = await _attendedService.GetAsync(ev.EventId, userId).ConfigureAwait(false);
+            var existing = await _attendedService.GetAsync(ev.EventId, userId);
             _isAttending = existing != null;
         }
 

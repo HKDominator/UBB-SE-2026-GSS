@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 
 using Events_GSS.ViewModels;
+using Events_GSS.Services;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.UI.Xaml;
@@ -40,5 +41,14 @@ public sealed partial class EventListingPage : Page
             : App.Services.GetRequiredService<EventListingViewModel>();
 
         ViewModel.LoadCommand.Execute(null);
+    }
+
+    private void OnEventCardTapped(object sender, Microsoft.UI.Xaml.Input.TappedRoutedEventArgs e)
+    {
+        if (sender is FrameworkElement fe && fe.DataContext is Events_GSS.Data.Models.Event ev)
+        {
+            var nav = App.Services.GetRequiredService<INavigationService>();
+            nav.NavigateTo(PageKeys.EventDetail, ev);
+        }
     }
 }

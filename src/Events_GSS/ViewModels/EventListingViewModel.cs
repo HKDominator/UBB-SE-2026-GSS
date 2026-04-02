@@ -89,15 +89,15 @@ public partial class EventListingViewModel : ObservableObject
 
     [RelayCommand]
     private void NavigateToCreate()
-        => _navigation.NavigateTo("CreateEventPage");
+        => _navigation.NavigateTo(PageKeys.CreateEvent);
 
     [RelayCommand]
     private void NavigateToAllEvents()
-        => _navigation.NavigateTo("EventListingPage");
+        => _navigation.NavigateTo(PageKeys.EventListing);
 
     [RelayCommand]
     private void NavigateToMyEvents()
-        => _navigation.NavigateTo("MyEventsPage");
+        => _navigation.NavigateTo(PageKeys.MyEvents);
 
     private void ApplyFilters()
     {
