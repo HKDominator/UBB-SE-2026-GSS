@@ -119,4 +119,79 @@ public sealed partial class AnnouncementControl : UserControl
         }
         return null;
     }
+
+    private async void OnReadReceiptsClicked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement fe
+            || fe.Tag is not AnnouncementItemViewModel item
+            || ViewModel is null
+            || !ViewModel.IsEventAdmin)
+            return;
+
+        // Load the receipts
+        await ViewModel.LoadReadReceiptsCommand.ExecuteAsync(item);
+
+        // Build the dialog content
+        var panel = new StackPanel { Spacing = 8 };
+
+        // Summary line
+        panel.Children.Add(new TextBlock
+        {
+            Text = ViewModel.ReadReceiptSummary,
+            Style = (Style)Application.Current.Resources["BodyStrongTextBlockStyle"]
+        });
+
+        // Readers list
+        if (ViewModel.ReadReceiptUsers.Count > 0)
+        {
+            panel.Children.Add(new TextBlock
+            {
+                Text = "Read by:",
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                FontSize = 13,
+                Margin = new Thickness(0, 8, 0, 0)
+            });
+
+            foreach (var receipt in ViewModel.ReadReceiptUsers)
+            {
+                var row = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 8 };
+                row.Children.Add(new TextBlock
+                {
+                    Text = receipt.User.Name,
+                    Style = (Style)Application.Current.Resources["BodyTextBlockStyle"]
+                });
+                row.Children.Add(new TextBlock
+                {
+                    Text = receipt.ReadAt.ToString("MMM dd, HH:mm"),
+                    Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"],
+                    FontSize = 12,
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+                panel.Children.Add(row);
+            }
+        }
+        else
+        {
+            panel.Children.Add(new TextBlock
+            {
+                Text = "No one has read this announcement yet.",
+                FontStyle = Windows.UI.Text.FontStyle.Italic,
+                Foreground = (Brush)Application.Current.Resources["TextFillColorSecondaryBrush"]
+            });
+        }
+
+        var dialog = new ContentDialog
+        {
+            Title = "Read Receipts",
+            Content = new ScrollViewer
+            {
+                Content = panel,
+                MaxHeight = 400
+            },
+            CloseButtonText = "Close",
+            XamlRoot = this.XamlRoot
+        };
+
+        await dialog.ShowAsync();
+    }
 }
