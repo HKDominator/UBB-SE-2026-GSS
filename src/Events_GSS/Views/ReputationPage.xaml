@@ -23,7 +23,7 @@
             <TextBlock Text="{Binding ErrorMessage}" Foreground="Red" HorizontalAlignment="Center" VerticalAlignment="Center" Visibility="{Binding ErrorMessage, Converter={StaticResource NullToVisibilityConverter}}" />
 
             <ScrollViewer Visibility="{Binding IsLoading, Converter={StaticResource BoolToInverseVisibilityConverter}}">
-                <StackPanel Spacing="24" MaxWidth="700" HorizontalAlignment="Stretch">
+                <StackPanel Spacing="24" MaxWidth="1000" HorizontalAlignment="Center" Padding="24">
 
                     <Border CornerRadius="12" Padding="32,24" Background="{ThemeResource CardBackgroundFillColorDefaultBrush}" BorderBrush="{ThemeResource CardStrokeColorDefaultBrush}" BorderThickness="1">
                         <StackPanel HorizontalAlignment="Center" Spacing="10">

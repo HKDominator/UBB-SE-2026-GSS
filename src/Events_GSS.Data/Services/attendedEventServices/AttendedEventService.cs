@@ -2,6 +2,7 @@
 using Events_GSS.Data.Messaging;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
+using Events_GSS.Data.Services.reputationService;
 using Events_GSS.Services.Interfaces;
 
 namespace Events_GSS.Services
@@ -9,10 +10,12 @@ namespace Events_GSS.Services
     public class AttendedEventService : IAttendedEventService
     {
         private readonly IAttendedEventRepository _repo;
+        private readonly IReputationService _reputationService;
 
-        public AttendedEventService(IAttendedEventRepository repo)
+        public AttendedEventService(IAttendedEventRepository repo, IReputationService reputationService)
         {
             _repo = repo;
+            _reputationService = reputationService;
         }
 
         // Return all attended events.
@@ -33,6 +36,9 @@ namespace Events_GSS.Services
         // Enrolls a user in an event with the current UTC time as the enrollment date.
         public async Task AttendEventAsync(int eventId, int userId)
         {
+            if (!await _reputationService.CanAttendEventsAsync(userId))
+                throw new InvalidOperationException("Your reputation is too low to attend events (at -1000 RP).");
+
             // Check if already enrolled to avoid duplicate entries.
             var existing = await _repo.GetAsync(eventId, userId);
             if (existing != null)

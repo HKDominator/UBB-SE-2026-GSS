@@ -8,17 +8,19 @@ using Events_GSS.Data.Messaging;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.Data.Services.reputationService;
 
 namespace Events_GSS.Data.Services
 {
     public class MemoryService : IMemoryService
     {
         private readonly IMemoryRepository _memoryRepo;
-        //IAttendedEvents ....
+        private readonly IReputationService _reputationService;
 
-        public MemoryService(IMemoryRepository memoryRepo)
+        public MemoryService(IMemoryRepository memoryRepo, IReputationService reputationService)
         {
             _memoryRepo = memoryRepo;
+            _reputationService = reputationService;
         }
 
         public async Task<List<Memory>> GetByEventAsync(Event forEvent, User currentUser)
@@ -59,6 +61,9 @@ namespace Events_GSS.Data.Services
 
         public async Task AddAsync(Event forEvent, User author, string? photoPath, string? text)
         {
+            if (!await _reputationService.CanPostMemoriesAsync(author.UserId))
+                throw new InvalidOperationException("Your reputation is too low to post memories (below -300 RP).");
+
             bool hasPhoto = !string.IsNullOrWhiteSpace(photoPath);
             bool hasText = !string.IsNullOrWhiteSpace(text);
             //check if user is in attended events, if no exception

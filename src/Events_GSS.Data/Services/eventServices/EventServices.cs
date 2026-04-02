@@ -3,17 +3,20 @@ using CommunityToolkit.Mvvm.Messaging;
 using Events_GSS.Data.Messaging;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories.eventRepository;
+using Events_GSS.Data.Services.reputationService;
 
 namespace Events_GSS.Data.Services.eventServices;
 
 public class EventService: IEventService
 {
 	private readonly IEventRepository _eventRepository;
+	private readonly IReputationService _reputationService;
 
-    public EventService(IEventRepository eventRepository)
-    {
-        _eventRepository = eventRepository;
-    }
+	public EventService(IEventRepository eventRepository, IReputationService reputationService)
+	{
+		_eventRepository = eventRepository;
+		_reputationService = reputationService;
+	}
 
     public async Task<List<Event>> GetAllPublicActiveEventsAsync()
         => await _eventRepository.GetAllPublicActiveAsync();
@@ -23,6 +26,9 @@ public class EventService: IEventService
 
     public async Task CreateEventAsync(Event eventEntity)
     {
+        if (!await _reputationService.CanCreateEventsAsync(eventEntity.Admin.UserId))
+            throw new InvalidOperationException("Your reputation is too low to create events (below -700 RP).");
+
         await _eventRepository.AddAsync(eventEntity);
         WeakReferenceMessenger.Default.Send(
             new ReputationMessage(eventEntity.Admin.UserId, ReputationAction.EventCreated));

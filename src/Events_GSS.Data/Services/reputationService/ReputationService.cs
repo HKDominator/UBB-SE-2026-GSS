@@ -61,6 +61,30 @@ public class ReputationService : IReputationService
         return await _achievementRepo.GetUserAchievementsAsync(userId);
     }
 
+    public async Task<bool> CanPostMemoriesAsync(int userId)
+    {
+        var rp = await GetReputationPointsAsync(userId);
+        return rp > -300;
+    }
+
+    public async Task<bool> CanPostMessagesAsync(int userId)
+    {
+        var rp = await GetReputationPointsAsync(userId);
+        return rp > -500;
+    }
+
+    public async Task<bool> CanCreateEventsAsync(int userId)
+    {
+        var rp = await GetReputationPointsAsync(userId);
+        return rp > -700;
+    }
+
+    public async Task<bool> CanAttendEventsAsync(int userId)
+    {
+        var rp = await GetReputationPointsAsync(userId);
+        return rp > -1000;
+    }
+
     private async Task HandleReputationChangeAsync(ReputationMessage message)
     {
         try

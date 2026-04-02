@@ -44,6 +44,19 @@ CREATE TABLE Users (
     CONSTRAINT UQ_Users_Email    UNIQUE (Email)
 );
 
+-- Seed users
+SET IDENTITY_INSERT Users ON;
+INSERT INTO Users (Id, Name, Email, PasswordHash) VALUES
+    (1, 'Alice Popescu',      'alice@test.com',      'hash1'),
+    (2, 'Bob Ionescu',        'bob@test.com',        'hash2'),
+    (3, 'Carol Popa',         'carol@test.com',      'hash3'),
+    (4, 'Dan Gheorghe',       'dan@test.com',        'hash4'),
+    (5, 'Elena Moldovan',     'elena@test.com',      'hash5'),
+    (6, 'Florin Stanescu',    'florin@test.com',      'hash6'),
+    (7, 'TestUser Penalized', 'penalized@test.com',  'hash7');
+SET IDENTITY_INSERT Users OFF;
+GO
+
 
 -- ============================================================
 -- 2b. USERS_RP_SCORES  (reputation kept separate from core Users)
@@ -60,6 +73,17 @@ CREATE TABLE users_RP_scores (
         'Newcomer', 'Contributor', 'Organizer', 'Community Leader', 'Event Master'
     ))
 );
+
+-- Seed RP scores
+INSERT INTO users_RP_scores (UserId, ReputationPoints, Tier) VALUES
+    (1,  340,   'Organizer'),
+    (2,  120,   'Contributor'),
+    (3,   75,   'Contributor'),
+    (4,  510,   'Community Leader'),
+    (5,    0,   'Newcomer'),
+    (6,  -50,   'Newcomer'),
+    (7, -1000,  'Newcomer');
+GO
 
 
 -- ============================================================
