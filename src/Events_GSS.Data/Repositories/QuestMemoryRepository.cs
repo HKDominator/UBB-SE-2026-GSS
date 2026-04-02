@@ -148,7 +148,7 @@ public class QuestMemoryRepository : IQuestMemoryRepository
 
             const string query = @"
                 SELECT qm.QuestMemoryId, qm.QuestId, qm.MemoryId, qm.Status,
-                       m.UserId, m.PhotoPath, m.Text, m.CreatedAt
+                       m.UserId, m.PhotoPath, m.Text, m.CreatedAt, m.EventId
                 FROM QuestMemories qm
                 JOIN Memories m ON qm.MemoryId = m.MemoryId
                 WHERE qm.QuestId = @QuestId
@@ -169,7 +169,8 @@ public class QuestMemoryRepository : IQuestMemoryRepository
                         Author = new User { UserId = (int)reader["UserId"] },
                         PhotoPath = reader["PhotoPath"] == DBNull.Value ? null : (string)reader["PhotoPath"],
                         Text = reader["Text"] == DBNull.Value ? null : (string)reader["Text"],
-                        CreatedAt = (DateTime)reader["CreatedAt"]
+                        CreatedAt = (DateTime)reader["CreatedAt"],
+                        Event = new Event { EventId = (int)reader["EventId"] }
                     },
                     ProofStatus = QuestMemoryStatus.Submitted
                 });
