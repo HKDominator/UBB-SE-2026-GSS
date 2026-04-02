@@ -74,16 +74,7 @@ public partial class App : Application
 
         Services = services.BuildServiceProvider();
     }
-            services.AddTransient<IQuestMemoryRepository, QuestMemoryRepository>();
-            services.AddTransient<IQuestApprovalService, QuestApprovalService>();
-
-            services.AddTransient<IAttendedEventRepository, AttendedEventRepository>();
-            services.AddTransient<IAttendedEventService, AttendedEventService>();
-
-            services.AddTransient<IUserService, MockUserService>();
-
-            Services = services.BuildServiceProvider();
-        }
+    
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {

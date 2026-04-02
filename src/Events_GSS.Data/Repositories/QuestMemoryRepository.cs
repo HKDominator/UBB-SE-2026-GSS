@@ -5,7 +5,7 @@ using System.Text;
 
 using Events_GSS.Data.Database;
 using Events_GSS.Data.Models;
-using Events_GSS.Data.Repositories.Interfaces;
+using Events_GSS.Data.Repositories;
 
 using Microsoft.Data.SqlClient;
 
