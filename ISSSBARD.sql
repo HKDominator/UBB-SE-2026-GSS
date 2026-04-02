@@ -39,24 +39,15 @@ CREATE TABLE Users (
     Name              NVARCHAR(100) NOT NULL,
     Email             NVARCHAR(254) NOT NULL,
     PasswordHash      NVARCHAR(512) NOT NULL,
-
-    CONSTRAINT PK_Users          PRIMARY KEY (Id),
-    CONSTRAINT UQ_Users_Email    UNIQUE (Email)
-);
-
-
--- ============================================================
--- 2b. USERS_RP_SCORES  (reputation kept separate from core Users)
--- ============================================================
-CREATE TABLE users_RP_scores (
-    UserId            INT           NOT NULL,
     ReputationPoints  INT           NOT NULL DEFAULT 0,
+    -- Tier is derived from RP but cached here to avoid recalculating on every read.
+    -- Values: Newcomer | Contributor | Organizer | Community Leader | Event Master
     Tier              NVARCHAR(50)  NOT NULL DEFAULT 'Newcomer',
 
-    CONSTRAINT PK_users_RP_scores       PRIMARY KEY (UserId),
-    CONSTRAINT FK_users_RP_scores_User  FOREIGN KEY (UserId) REFERENCES Users (Id) ON DELETE CASCADE,
-    CONSTRAINT CK_users_RP_Floor        CHECK (ReputationPoints >= -1000),
-    CONSTRAINT CK_users_RP_Tier         CHECK (Tier IN (
+    CONSTRAINT PK_Users          PRIMARY KEY (Id),
+    CONSTRAINT UQ_Users_Email    UNIQUE (Email),
+    CONSTRAINT CK_Users_RP_Floor CHECK (ReputationPoints >= -1000),
+    CONSTRAINT CK_Users_Tier     CHECK (Tier IN (
         'Newcomer', 'Contributor', 'Organizer', 'Community Leader', 'Event Master'
     ))
 );

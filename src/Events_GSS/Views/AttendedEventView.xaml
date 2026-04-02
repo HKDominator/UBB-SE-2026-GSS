@@ -17,25 +17,10 @@
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="24" RowSpacing="16">
 
-        <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
-            <TextBlock
-                Grid.Column="0"
-                Text="My Events"
-                Style="{StaticResource TitleTextBlockStyle}" />
-            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8" VerticalAlignment="Center">
-                <TextBlock Text="⭐" FontSize="18" VerticalAlignment="Center"/>
-                <TextBlock
-                    Text="{Binding CurrentUser.ReputationPoints}"
-                    FontSize="18"
-                    FontWeight="SemiBold"
-                    VerticalAlignment="Center"/>
-                <TextBlock
-                    Text="RP"
-                    FontSize="14"
-                    Foreground="{ThemeResource TextFillColorSecondaryBrush}"
-                    VerticalAlignment="Center"/>
-            </StackPanel>
-        </Grid>
+        <TextBlock
+            Grid.Row="0"
+            Text="My Events"
+            Style="{StaticResource TitleTextBlockStyle}" />
 
         <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
             <TextBox

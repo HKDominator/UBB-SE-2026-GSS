@@ -1,4 +1,6 @@
-﻿using Events_GSS.Data.Models;
+﻿using CommunityToolkit.Mvvm.Messaging;
+using Events_GSS.Data.Messaging;
+using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Services.Interfaces;
 
@@ -48,6 +50,9 @@ namespace Events_GSS.Services
             };
 
             await _repo.AddAsync(attendedEvent);
+
+            WeakReferenceMessenger.Default.Send(
+                new ReputationMessage(userId, ReputationAction.EventAttended, eventId));
         }
 
         public async Task LeaveEventAsync(int eventId, int userId)

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
+using CommunityToolkit.Mvvm.Messaging;
+using Events_GSS.Data.Messaging;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Repositories.eventRepository;
@@ -138,7 +140,14 @@ public class DiscussionService : IDiscussionService
         if (message.Author?.UserId != userId && !isAdmin)
             throw new UnauthorizedAccessException("You can only delete your own messages.");
 
+        bool isAdminDeletingOther = isAdmin && message.Author?.UserId != userId;
         await _repo.DeleteAsync(messageId);
+
+        if (isAdminDeletingOther && message.Author != null)
+        {
+            WeakReferenceMessenger.Default.Send(
+                new ReputationMessage(message.Author.UserId, ReputationAction.DiscussionMessageRemovedByAdmin));
+        }
     }
 
     // ── Reactions ─────────────────────────────────────────────────────────────

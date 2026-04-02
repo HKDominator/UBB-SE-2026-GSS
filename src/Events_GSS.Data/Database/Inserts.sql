@@ -1,37 +1,44 @@
 USE ISSEvents
- 
+
 DELETE FROM MemoryLikes;
 DELETE FROM Memories;
 DELETE FROM AttendedEvents;
 DELETE FROM Events;
+DELETE FROM users_RP_scores;
 DELETE FROM Users;
- 
+
 -- Reset identity to start again from 1
 DBCC CHECKIDENT ('Users', RESEED, 0);
 DBCC CHECKIDENT ('Events', RESEED, 0);
 DBCC CHECKIDENT ('Memories', RESEED, 0);
- 
+
 SET IDENTITY_INSERT Users ON;
- 
--- User 1 (va fi admin la event)
-INSERT INTO Users (Id, Name, Email, PasswordHash, ReputationPoints)
-VALUES (1, 'Alice Admin', '[alice@test.com](mailto:alice@test.com)', 'hash123', 340);
 
--- User 2 (user normal)
-INSERT INTO Users (Id, Name, Email, PasswordHash, ReputationPoints)
-VALUES (2, 'Bob User', '[bob@test.com](mailto:bob@test.com)', 'hash456', 120);
+INSERT INTO Users (Id, Name, Email, PasswordHash)
+VALUES (1, 'Alice Admin', 'alice@test.com', 'hash123');
 
--- User 3 (alt user normal)
-INSERT INTO Users (Id, Name, Email, PasswordHash, ReputationPoints)
-VALUES (3, 'Carol User', '[carol@test.com](mailto:carol@test.com)', 'hash789', 75);
+INSERT INTO Users (Id, Name, Email, PasswordHash)
+VALUES (2, 'Bob User', 'bob@test.com', 'hash456');
 
-INSERT INTO Users (Id, Name, Email, PasswordHash, ReputationPoints)
+INSERT INTO Users (Id, Name, Email, PasswordHash)
+VALUES (3, 'Carol User', 'carol@test.com', 'hash789');
+
+INSERT INTO Users (Id, Name, Email, PasswordHash)
 VALUES
-(4, 'Dan Gheorghe', '[dan@test.com](mailto:dan@test.com)', 'blah', 510),
-(5, 'Elena Moldovan', '[elena@test.com](mailto:elena@test.com)', 'blah', 0),
-(6, 'Florin Stanescu', '[florin@test.com](mailto:florin@test.com)', 'blah', -50);
+(4, 'Dan Gheorghe', 'dan@test.com', 'blah'),
+(5, 'Elena Moldovan', 'elena@test.com', 'blah'),
+(6, 'Florin Stanescu', 'florin@test.com', 'blah');
 
 SET IDENTITY_INSERT Users OFF;
+
+-- Seed reputation scores
+INSERT INTO users_RP_scores (UserId, ReputationPoints, Tier) VALUES
+(1, 340, 'Organizer'),
+(2, 120, 'Contributor'),
+(3,  75, 'Contributor'),
+(4, 510, 'Community Leader'),
+(5,   0, 'Newcomer'),
+(6, -50, 'Newcomer');
  
 SET IDENTITY_INSERT Events ON;
  

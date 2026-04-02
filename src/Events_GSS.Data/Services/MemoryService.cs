@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+using CommunityToolkit.Mvvm.Messaging;
+using Events_GSS.Data.Messaging;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Services.Interfaces;
@@ -74,6 +76,12 @@ namespace Events_GSS.Data.Services
             };
 
             await _memoryRepo.AddAsync(memory);
+
+            var action = hasPhoto
+                ? ReputationAction.MemoryAddedWithPhoto
+                : ReputationAction.MemoryAddedTextOnly;
+            WeakReferenceMessenger.Default.Send(
+                new ReputationMessage(author.UserId, action));
         }
 
         public async Task DeleteAsync(Memory memory, User requestingUser)
