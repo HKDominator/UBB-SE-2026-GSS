@@ -1,5 +1,6 @@
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Services.announcementServices;
+using Events_GSS.Data.Services.reputationService;
 using Events_GSS.Services;
 using Events_GSS.Services.Interfaces;
 using Events_GSS.ViewModels;
@@ -33,8 +34,9 @@ namespace Events_GSS.Views
             {
                 var attendedEventService = App.Services.GetRequiredService<IAttendedEventService>();
                 var userService = App.Services.GetRequiredService<IUserService>();
+                var reputationService = App.Services.GetRequiredService<IReputationService>();
                 var announcementService = App.Services.GetRequiredService<IAnnouncementService>();
-                ViewModel = new AttendedEventViewModel(attendedEventService, userService, announcementService);
+                ViewModel = new AttendedEventViewModel(attendedEventService, userService, reputationService, announcementService);
                 DataContext = ViewModel;
             }
 
