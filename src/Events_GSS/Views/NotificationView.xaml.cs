@@ -20,6 +20,7 @@ using Windows.Foundation.Collections;
 // To learn more about WinUI, the WinUI project structure,
 // and more about our project templates, see: http://aka.ms/winui-project-info.
 using Events_GSS.ViewModels;
+using Events_GSS.Data.Models;
 namespace Events_GSS.Views
 {
     public sealed partial class NotificationView : UserControl
@@ -34,6 +35,12 @@ namespace Events_GSS.Views
             DataContext = ViewModel;
 
             Loaded += async (s, e) => await ViewModel.LoadAsync();
+        }
+
+        private async void DeleteButton_Click(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
+        {
+            if (sender is Button btn && btn.Tag is Notification notification)
+                await ViewModel.DeleteAsync(notification);
         }
     }
 }
