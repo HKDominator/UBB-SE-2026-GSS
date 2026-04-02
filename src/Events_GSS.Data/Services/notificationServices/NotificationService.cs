@@ -27,12 +27,12 @@ namespace Events_GSS.Data.Services.notificationServices
         }
         public async Task<List<Notification>> GetNotificationsAsync(int userId)
         {
-            return null;
+            return await _notificationRepository.GetByUserIdAsync(userId);
         }
         
         public async Task DeleteAsync(int notificationId)
         {
-
+            await _notificationRepository.DeleteAsync(notificationId);
         }
     }
 }
