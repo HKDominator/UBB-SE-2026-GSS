@@ -68,12 +68,14 @@ public class ReputationService : IReputationService
             if (message.Value == ReputationAction.EventAttended)
             {
                 await HandleEventAttendedAsync(message.EventId!.Value);
+                await _achievementRepo.CheckAndAwardAchievementsAsync(message.UserId);
                 return;
             }
 
             if (RpDeltas.TryGetValue(message.Value, out int delta))
             {
                 await _reputationRepo.UpdateReputationAsync(message.UserId, delta);
+                await _achievementRepo.CheckAndAwardAchievementsAsync(message.UserId);
             }
         }
         catch (Exception)
