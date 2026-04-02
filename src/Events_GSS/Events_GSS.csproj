@@ -14,9 +14,26 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="ViewModels\AnnouncementControl.xaml" />
+    <None Remove="Views\AnnouncementControl.xaml" />
+    <None Remove="Views\CreateEventPage.xaml" />
+    <None Remove="Views\DiscussionControl.xaml" />
+    <None Remove="Views\AttendedEventView.xaml" />
+    <None Remove="Views\EventDetailPage.xaml" />
+    <None Remove="Views\EventListingPage.xaml" />
     <None Remove="Views\QuestAdminControl.xaml" />
     <None Remove="Views\QuestApprovalPage.xaml" />
     <None Remove="Views\SubmitProofDialog.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventStep1View.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventControl.xaml" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Views\CreateEventStep2View.xaml" />
+    <None Remove="Views\ShellPage.xaml" />
   </ItemGroup>
 
   <ItemGroup>
@@ -59,15 +76,6 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Page Update="Views\QuestApprovalPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\QuestUserPage.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Update="Views\SubmitProofDialog.xaml">
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Update="Views\QuestAdminControl.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -75,6 +83,11 @@
   <ItemGroup>
     <Page Update="Views\MemoryView.xaml">
       <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </Page>
+  </ItemGroup>
+  <ItemGroup>
+    <Page Update="Views\CreateEventStep3View.xaml">
+      <Generator>MSBuild:Compile</Generator>
     </Page>
   </ItemGroup>
 

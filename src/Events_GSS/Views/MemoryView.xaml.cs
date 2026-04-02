@@ -24,19 +24,6 @@ namespace Events_GSS.Views
             await ViewModel.InitializeAsync(ev, user);
         }
 
-        // ── Filter ────────────────────────────────────────────────────
-
-        private void MyMemoriesToggle_Click(object sender, RoutedEventArgs e)
-        {
-            ViewModel.ShowOnlyMine = MyMemoriesToggle.IsChecked == true;
-        }
-
-       
-        private void SortButton_Click(object sender, RoutedEventArgs e)
-        {
-            MyMemoriesToggle.IsChecked = false;
-        }
-
        
 
         private async void LikeButton_Click(object sender, RoutedEventArgs e)
@@ -46,8 +33,10 @@ namespace Events_GSS.Views
 
             await ViewModel.ToggleLikeAsync(item);
         }
-
-        // ── Delete ────────────────────────────────────────────────────
+        private void MyMemoriesToggle_Click(object sender, RoutedEventArgs e)
+        {
+            ViewModel.ShowOnlyMine = MyMemoriesToggle.IsChecked == true;
+        }
 
         private async void DeleteButton_Click(object sender, RoutedEventArgs e)
         {
@@ -67,8 +56,6 @@ namespace Events_GSS.Views
             if (result == ContentDialogResult.Primary)
                 await ViewModel.DeleteMemoryAsync(item);
         }
-
-        // ── Add ───────────────────────────────────────────────────────
 
         private async void AddMemoryButton_Click(object sender, RoutedEventArgs e)
         {

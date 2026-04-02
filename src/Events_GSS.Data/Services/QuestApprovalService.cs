@@ -4,8 +4,8 @@ using System.Security.Cryptography.Pkcs;
 using System.Text;
 
 using Events_GSS.Data.Models;
+using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Services.Interfaces;
-using Events_GSS.Data.Repositories.Interfaces;
 
 namespace Events_GSS.Data.Services;
 
