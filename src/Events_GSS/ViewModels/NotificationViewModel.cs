@@ -27,7 +27,7 @@ namespace Events_GSS.ViewModels
         public ObservableCollection<Notification> Notifications
         {
             get { return _notifications; }
-            set { _notifications = value; }
+            set { _notifications = value; OnPropertyChanged(); }
         }
 
         public NotificationViewModel(INotificationService notificationService, IUserService userService)
