@@ -2,20 +2,24 @@
 
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-
+using Events_GSS;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Services.Interfaces;
-using Events_GSS.ViewModels;
+using Microsoft.Extensions.DependencyInjection;
+
+
+namespace Events_GSS.ViewModels;
 
 public enum QuestFilter { All, Submitted, Completed, Incomplete }
 
 public partial class QuestUserViewModel : ObservableObject
 {
-    private readonly IQuestApprovalService _questService;
-    private readonly IUserService _userService;
+    private readonly IQuestApprovalService _questService =App.Services.GetRequiredService<IQuestApprovalService>();
+    private readonly IUserService _userService = App.Services.GetRequiredService<IUserService>();
     private readonly Event _currentEvent;
     private bool _isAttending;
+
     private List<QuestItemViewModel> _allQuests = [];
     public ObservableCollection<QuestItemViewModel> Quests { get; } = [];
 
@@ -35,18 +39,16 @@ public partial class QuestUserViewModel : ObservableObject
         _ => QuestFilter.All
     });
 
-    public QuestUserViewModel(Event currentEvent, IQuestApprovalService questService, IUserService userService)
+    public QuestUserViewModel(Event currentEvent)
     {
-        _questService = questService;
-        _userService = userService;
         _currentEvent = currentEvent;
         InitializeAsync();
     }
 
     private async Task InitializeAsync()
     {
-        // The UI will show the default 'false' until this completes
         _isAttending = await _userService.IsAttending(_currentEvent);
+        await LoadQuestsAsync();
     }
 
     [RelayCommand]

@@ -6,6 +6,7 @@ using System.Text;
 using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Services.Interfaces;
+using Events_GSS;
 
 namespace Events_GSS.Data.Services;
 

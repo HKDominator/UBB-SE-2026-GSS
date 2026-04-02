@@ -43,7 +43,7 @@ namespace Events_GSS.Services
         };
 
         // The currently logged-in user — change UserId to simulate a different user
-        private static readonly int _currentUserId = 3;
+        private static readonly int _currentUserId = 1;
 
         /// <summary>
         /// Returns the currently logged-in user.
@@ -102,6 +102,10 @@ namespace Events_GSS.Services
                 Debug.WriteLine("AttendingEvents: "+exc);
                 return false;
             }
+        }
+        public bool IsAdmin(Event currentEvent)
+        {
+            return currentEvent.Admin.UserId == _currentUserId;
         }
 
     }

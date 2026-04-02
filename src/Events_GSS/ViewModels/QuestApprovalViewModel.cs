@@ -9,12 +9,14 @@ using Events_GSS.Data.Models;
 using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.ViewModels;
 
+using Microsoft.Extensions.DependencyInjection;
+
 namespace Events_GSS.ViewModels;
 
 public partial class QuestApprovalViewModel : ObservableObject
 {
-    private readonly IQuestApprovalService _questService;
-
+    private readonly IQuestApprovalService _questService = App.Services.GetRequiredService<IQuestApprovalService>();
+    public string Title => "Admin Mode";
     public QuestAdminViewModel QuestAdminVM { get; }
 
     public ObservableCollection<QuestMemory> Submissions { get; set; } = new();
@@ -22,10 +24,9 @@ public partial class QuestApprovalViewModel : ObservableObject
     [ObservableProperty]
     public partial bool IsLoadingSubmissions { get; set; }
 
-    public QuestApprovalViewModel(QuestAdminViewModel adminVM, IQuestApprovalService questService)
+    public QuestApprovalViewModel(QuestAdminViewModel adminVM)
     {
         QuestAdminVM = adminVM;
-        _questService = questService;
 
         QuestAdminVM.PropertyChanged += QuestAdminVM_PropertyChanged;
     }

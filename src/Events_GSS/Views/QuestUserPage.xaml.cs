@@ -12,14 +12,7 @@ public sealed partial class QuestUserPage : Page
     public QuestUserPage()
     {
         InitializeComponent();
-        this.Loaded += async (s, e) =>
-        {
-            if (ViewModel != null)
-            {
-                // This actually triggers the function in your ViewModel
-                await ViewModel.LoadQuestsCommand.ExecuteAsync(null);
-            }
-        };
+        
     }
 
     // public void Initialize(QuestUserViewModel viewModel)
