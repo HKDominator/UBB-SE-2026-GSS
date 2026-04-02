@@ -119,10 +119,7 @@ namespace Events_GSS.Data.Services
             else
                 await _memoryRepo.AddLikeAsync(memory.MemoryId, currentUser.UserId);
         }
-        public bool IsOwnMemory(Memory memory, User currentUser)
-        {
-            return memory.Author.UserId == currentUser.UserId;
-        }
+       
         public bool CanDelete(Memory memory, User currentUser)
         {
             bool isAuthor = memory.Author?.UserId == currentUser.UserId;

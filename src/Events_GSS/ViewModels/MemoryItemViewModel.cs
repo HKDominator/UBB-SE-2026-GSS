@@ -11,8 +11,6 @@ namespace Events_GSS.ViewModels
 
         private int _likesCount;
         private bool _isLikedByCurrentUser;
-
-        public int MemoryId => Memory.MemoryId;
         public string? PhotoPath => Memory.PhotoPath;
         public string? Text => Memory.Text;
         public System.DateTime CreatedAt => Memory.CreatedAt;

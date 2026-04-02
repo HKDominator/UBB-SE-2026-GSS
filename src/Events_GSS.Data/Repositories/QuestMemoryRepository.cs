@@ -245,4 +245,38 @@ public class QuestMemoryRepository : IQuestMemoryRepository
             throw new Exception("An unexpected error occurred while deleting the proof.", ex);
         }
     }
+    public async Task<List<QuestMemory>> GetSubmissionsByEventAsync(int eventId)
+    {
+        var proofs = new List<QuestMemory>();
+
+        using SqlConnection connection = _connectionFactory.CreateConnection();
+        await connection.OpenAsync();
+
+        const string query = @"
+        SELECT qm.QuestMemoryId, qm.QuestId, qm.MemoryId, qm.Status, m.UserId
+        FROM QuestMemories qm
+        INNER JOIN Memories m ON m.MemoryId = qm.MemoryId
+        WHERE m.EventId = @EventId";
+
+        using SqlCommand cmd = new SqlCommand(query, connection);
+        cmd.Parameters.AddWithValue("@EventId", eventId);
+
+        using SqlDataReader reader = await cmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            Enum.TryParse((string)reader["Status"], out QuestMemoryStatus status);
+            proofs.Add(new QuestMemory
+            {
+                ForQuest = new Quest { Id = (int)reader["QuestId"] },
+                Proof = new Memory
+                {
+                    MemoryId = (int)reader["MemoryId"],
+                    Author = new User { UserId = (int)reader["UserId"] }
+                },
+                ProofStatus = status
+            });
+        }
+
+        return proofs;
+    }
 }

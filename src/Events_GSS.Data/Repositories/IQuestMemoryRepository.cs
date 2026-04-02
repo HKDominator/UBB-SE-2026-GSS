@@ -18,4 +18,5 @@ public interface IQuestMemoryRepository
 
     //FOR BOTH
     public Task DeleteProofAsync(QuestMemory proof);
+    public Task<List<QuestMemory>> GetSubmissionsByEventAsync(int eventId);
 }

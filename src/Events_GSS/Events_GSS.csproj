@@ -78,6 +78,9 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\StatisticsView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\NotificationView.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

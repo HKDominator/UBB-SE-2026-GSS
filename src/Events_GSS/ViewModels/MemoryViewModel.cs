@@ -1,9 +1,7 @@
-using System;
-using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
+
 
 using CommunityToolkit.Mvvm.Input;
 
@@ -142,13 +140,6 @@ namespace Events_GSS.ViewModels
             }
             catch (InvalidOperationException ex) { ErrorMessage = ex.Message; }
             catch (Exception ex) { ErrorMessage = $"Could not toggle like: {ex.Message}"; }
-        }
-
-
-        public void ResetSortAndFilter()
-        {
-            _showOnlyMine = false;
-            OnPropertyChanged(nameof(ShowOnlyMine));
         }
 
         private async Task SortInternalAsync(bool ascending)

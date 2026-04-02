@@ -15,7 +15,9 @@ using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Data.Services.notificationServices;
 using Events_GSS.Services;
 using Events_GSS.Services.Interfaces;
+using Events_GSS.ViewModels;
 using Events_GSS.Views;
+
 
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -66,6 +68,8 @@ public partial class App : Application
         services.AddTransient<IAttendedEventService, AttendedEventService>();
         services.AddTransient<IUserService, MockUserService>();
         services.AddTransient<INotificationService, NotificationService>();
+        services.AddTransient<IStatisticsService, StatisticsService>();
+        services.AddTransient<StatisticsViewModel>();
 
         var navService = new NavigationService();
         navService.RegisterPage(PageKeys.EventListing, typeof(EventListingPage));
@@ -73,6 +77,7 @@ public partial class App : Application
         navService.RegisterPage(PageKeys.EventDetail, typeof(EventDetailPage));
         navService.RegisterPage(PageKeys.CreateEvent, typeof(CreateEventPage));
         navService.RegisterPage(PageKeys.Notifications, typeof(NotificationView));
+        navService.RegisterPage(PageKeys.Statistics, typeof(StatisticsView));
         services.AddSingleton<INavigationService>(navService);
 
         Services = services.BuildServiceProvider();

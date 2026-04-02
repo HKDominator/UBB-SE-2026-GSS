@@ -36,8 +36,19 @@
                     <FontIcon Glyph="&#xE787;" />
                 </NavigationViewItem.Icon>
             </NavigationViewItem>
-        </NavigationView.MenuItems>
 
+            <NavigationViewItem
+Content="Statistics"
+Tag="Statistics">
+                <NavigationViewItem.Icon>
+                    <FontIcon Glyph="&#xE9D9;" />
+                </NavigationViewItem.Icon>
+            </NavigationViewItem>
+
+        </NavigationView.MenuItems>
+        
+        
+       
         <Frame x:Name="ContentFrame" />
 
     </NavigationView>
