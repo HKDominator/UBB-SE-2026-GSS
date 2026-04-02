@@ -80,3 +80,10 @@ VALUES
 (1, 2, 'Hey everyone! Excited for this event!', GETUTCDATE(), 0),
 (1, 3, 'Me too! @Bob User are you bringing snacks?', DATEADD(MINUTE, 1, GETUTCDATE()), 0),
 (1, 1, 'Welcome all! Feel free to ask questions here.', DATEADD(MINUTE, 2, GETUTCDATE()), 0);
+
+INSERT INTO Quests (EventId, [Name], Description, Difficulty)
+VALUES
+(1, 'Find the Hidden Code', 'There is a hidden code somewhere in the event. Find it and share it in the discussion!', 5),
+(1, 'Photo Challenge', 'Take a creative photo at the event and share it in the memories!', 2),
+(2, 'Book Trivia', 'Answer trivia question: who inspired the worldbuildinng of the book?.', 1),
+(3, 'Flower Master', 'Find and share a beautiful photo of flowers.', 3);
