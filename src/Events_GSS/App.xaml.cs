@@ -87,22 +87,6 @@ namespace Events_GSS
         protected override void OnLaunched(Microsoft.UI.Xaml.LaunchActivatedEventArgs args)
         {
             _window = new MainWindow();
-            // 1. Get your services from the DI container you already set up
-            var questService = Services.GetRequiredService<IQuestService>();
-            var questApprovalService = Services.GetRequiredService<IQuestApprovalService>();
-            // 2. Create the "Inner" ViewModel (The one for QuestAdminControl)
-            // You'll need a dummy 'Event' object here since your VM requires one
-            var dummyEvent = new Event { Name = "Test Event", EventId = 1 };
-            var adminVM = new QuestAdminViewModel(dummyEvent, questService);
-
-            // 3. Create the "Bridge" Page manually
-            var rootPage = new QuestApprovalPage();
-
-            // 4. Manually trigger the ViewModel setup (since OnNavigatedTo won't fire)
-            rootPage.ViewModel = new QuestApprovalViewModel(adminVM,questApprovalService);
-
-            // 5. Set the window content
-            _window.Content = rootPage;
             _window.Activate();
         }
     }
