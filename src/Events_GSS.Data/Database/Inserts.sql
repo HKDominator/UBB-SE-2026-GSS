@@ -24,22 +24,13 @@ DBCC CHECKIDENT ('Discussions', RESEED, 0);
 SET IDENTITY_INSERT Users ON;
 
 INSERT INTO Users (Id, Name, Email, PasswordHash)
-VALUES (1, 'Alice Admin', 'alice@test.com', 'hash123');
-
-INSERT INTO Users (Id, Name, Email, PasswordHash)
-VALUES (2, 'Bob User', 'bob@test.com', 'hash456');
-
-INSERT INTO Users (Id, Name, Email, PasswordHash)
-VALUES (3, 'Carol User', 'carol@test.com', 'hash789');
-
-INSERT INTO Users (Id, Name, Email, PasswordHash)
-VALUES (3, 'Carol User', '[carol@test.com](mailto:carol@test.com)', 'hash789', 75);
+VALUES 
+(1, 'Alice Admin', 'alice@test.com', 'hash123'),
+(2, 'Bob User', 'bob@test.com', 'hash456'),
+(3, 'Carol User', 'carol@test.com', 'hash789'),
 (4, 'Dan Gheorghe', 'dan@test.com', 'blah'),
 (5, 'Elena Moldovan', 'elena@test.com', 'blah'),
 (6, 'Florin Stanescu', 'florin@test.com', 'blah');
-(4, 'Dan Gheorghe',     'dan@test.com',     'blah',    510),
-(5, 'Elena Moldovan',   'elena@test.com',   'blah',    0),
-(6, 'Florin Stanescu',  'florin@test.com',  'blah',    -50);
 
 SET IDENTITY_INSERT Users OFF;
 
