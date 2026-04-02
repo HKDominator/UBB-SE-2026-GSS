@@ -6,6 +6,7 @@ using Events_GSS.Data.Repositories.achievementRepository;
 using Events_GSS.Data.Repositories.announcementRepository;
 using Events_GSS.Data.Repositories.categoriesRepository;
 using Events_GSS.Data.Repositories.eventRepository;
+using Events_GSS.Data.Repositories.notificationRepository;
 using Events_GSS.Data.Repositories.reputationRepository;
 
 using Events_GSS.Data.Services;
@@ -14,6 +15,7 @@ using Events_GSS.Data.Services.categoryServices;
 using Events_GSS.Data.Services.discussionService;
 using Events_GSS.Data.Services.eventServices;
 using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.Data.Services.notificationServices;
 using Events_GSS.Data.Services.reputationService;
 using Events_GSS.Services;
 using Events_GSS.Services.Interfaces;
@@ -51,21 +53,25 @@ public partial class App : Application
         services.AddTransient<IEventRepository, EventRepository>();
         services.AddTransient<ICategoryRepository, CategoryRepository>();
         services.AddTransient<IQuestRepository, QuestRepository>();
+        services.AddTransient<IQuestMemoryRepository, QuestMemoryRepository>();
         services.AddTransient<IAnnouncementRepository, AnnouncementRepository>();
         services.AddTransient<IDiscussionRepository, DiscussionRepository>();
         services.AddTransient<IMemoryRepository, MemoryRepository>();
         services.AddTransient<IAttendedEventRepository, AttendedEventRepository>();
+        services.AddTransient<INotificationRepository, NotificationRepository>();
         services.AddTransient<IReputationRepository, ReputationRepository>();
         services.AddTransient<IAchievementRepository, AchievementRepository>();
 
         services.AddTransient<IEventService, EventService>();
         services.AddTransient<ICategoryServices, CategoryServices>();
         services.AddTransient<IQuestService, QuestService>();
+        services.AddTransient<IQuestApprovalService, QuestApprovalService>();
         services.AddTransient<IAnnouncementService, AnnouncementService>();
         services.AddTransient<IDiscussionService, DiscussionService>();
         services.AddTransient<IMemoryService, MemoryService>();
         services.AddTransient<IAttendedEventService, AttendedEventService>();
         services.AddTransient<IUserService, MockUserService>();
+        services.AddTransient<INotificationService, NotificationService>();
         services.AddSingleton<IReputationService, ReputationService>();
 
         var navService = new NavigationService();
@@ -74,6 +80,7 @@ public partial class App : Application
         navService.RegisterPage(PageKeys.Reputation, typeof(ReputationPage));
         navService.RegisterPage(PageKeys.EventDetail, typeof(EventDetailPage));
         navService.RegisterPage(PageKeys.CreateEvent, typeof(CreateEventPage));
+        navService.RegisterPage(PageKeys.Notifications, typeof(NotificationView));
         services.AddSingleton<INavigationService>(navService);
 
         Services = services.BuildServiceProvider();
@@ -81,6 +88,7 @@ public partial class App : Application
         // Eagerly resolve so it subscribes to WeakReferenceMessenger immediately
         Services.GetRequiredService<IReputationService>();
     }
+    
 
     protected override void OnLaunched(LaunchActivatedEventArgs args)
     {

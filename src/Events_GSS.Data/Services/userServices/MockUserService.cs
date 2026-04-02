@@ -1,4 +1,6 @@
-﻿using Events_GSS.Data.Models;
+﻿using System.Diagnostics;
+
+using Events_GSS.Data.Models;
 using Events_GSS.Services.Interfaces;
 
 namespace Events_GSS.Services
@@ -10,6 +12,13 @@ namespace Events_GSS.Services
     /// </summary>
     public class MockUserService : IUserService
     {
+        private readonly IAttendedEventService _attendedEventService;
+
+        public MockUserService(IAttendedEventService attendedEventService)
+        {
+            _attendedEventService = attendedEventService;
+        }
+
         // Hardcoded user pool — mirrors the Users table structure
         private static readonly List<User> _allUsers = new()
         {
@@ -34,7 +43,7 @@ namespace Events_GSS.Services
         };
 
         // The currently logged-in user — change UserId to simulate a different user
-        private static readonly int _currentUserId = 2;
+        private static readonly int _currentUserId = 1;
 
         /// <summary>
         /// Returns the currently logged-in user.
@@ -78,5 +87,26 @@ namespace Events_GSS.Services
                 .Where(u => u.Name.Contains(name, StringComparison.OrdinalIgnoreCase))
                 .ToList();
         }
+
+
+        public async Task<bool> IsAttending(Event currentEvent)
+        {
+            try
+            {
+                List<AttendedEvent> attendingEvents = await
+                    _attendedEventService.GetAttendedEventsAsync(_currentUserId);
+                return attendingEvents.Exists(ev => ev.Event.EventId == currentEvent.EventId);
+            }
+            catch (Exception exc)
+            {
+                Debug.WriteLine("AttendingEvents: "+exc);
+                return false;
+            }
+        }
+        public bool IsAdmin(Event currentEvent)
+        {
+            return currentEvent.Admin.UserId == _currentUserId;
+        }
+
     }
 }

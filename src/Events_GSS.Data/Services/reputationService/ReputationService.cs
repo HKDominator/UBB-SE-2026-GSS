@@ -95,6 +95,7 @@ public class ReputationService : IReputationService
                 await _achievementRepo.CheckAndAwardAchievementsAsync(message.UserId);
                 return;
             }
+            //TODO Quest approval, denied, submitted handling, messages are sent
 
             if (RpDeltas.TryGetValue(message.Value, out int delta))
             {

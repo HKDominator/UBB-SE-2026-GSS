@@ -7,4 +7,5 @@ public static class PageKeys
     public const string Reputation = "Reputation";
     public const string EventDetail = "EventDetail";
     public const string CreateEvent = "CreateEvent";
+    public const string Notifications = "Notifications";
 }

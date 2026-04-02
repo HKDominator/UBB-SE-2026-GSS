@@ -21,7 +21,10 @@
     <None Remove="Views\AttendedEventView.xaml" />
     <None Remove="Views\EventDetailPage.xaml" />
     <None Remove="Views\EventListingPage.xaml" />
+    <None Remove="Views\NotificationView.xaml" />
     <None Remove="Views\QuestAdminControl.xaml" />
+    <None Remove="Views\QuestApprovalPage.xaml" />
+    <None Remove="Views\SubmitProofDialog.xaml" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Views\CreateEventStep1View.xaml" />
@@ -58,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageReference Include="CommunityToolkit.WinUI.Controls.Sizers" Version="8.2.251219" />
     <PackageReference Include="CommunityToolkit.WinUI.UI.Controls.DataGrid" Version="7.1.2" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
@@ -74,6 +78,9 @@
     <None Update="appsettings.local.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <Page Update="Views\NotificationView.xaml">
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Update="Views\CreateEventPage.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Page>

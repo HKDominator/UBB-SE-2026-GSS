@@ -1,5 +1,6 @@
 using Events_GSS.Data.Database;
 using Events_GSS.Data.Models;
+
 using Microsoft.Data.SqlClient;
 
 namespace Events_GSS.Data.Repositories.achievementRepository;

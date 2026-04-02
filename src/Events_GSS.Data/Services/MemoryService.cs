@@ -9,17 +9,20 @@ using Events_GSS.Data.Models;
 using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Services.Interfaces;
 using Events_GSS.Data.Services.reputationService;
+using Events_GSS.Services.Interfaces;
 
 namespace Events_GSS.Data.Services
 {
     public class MemoryService : IMemoryService
     {
         private readonly IMemoryRepository _memoryRepo;
+        private readonly IAttendedEventRepository _attendedEventRepo;
         private readonly IReputationService _reputationService;
 
-        public MemoryService(IMemoryRepository memoryRepo, IReputationService reputationService)
+        public MemoryService(IMemoryRepository memoryRepo, IAttendedEventRepository attEveRepo, IReputationService reputationService)
         {
             _memoryRepo = memoryRepo;
+            _attendedEventRepo = attEveRepo;
             _reputationService = reputationService;
         }
 
@@ -61,12 +64,16 @@ namespace Events_GSS.Data.Services
 
         public async Task AddAsync(Event forEvent, User author, string? photoPath, string? text)
         {
-            if (!await _reputationService.CanPostMemoriesAsync(author.UserId))
-                throw new InvalidOperationException("Your reputation is too low to post memories (below -300 RP).");
+if (!await _reputationService.CanPostMemoriesAsync(author.UserId))
+    throw new InvalidOperationException("Your reputation is too low to post memories (below -300 RP).");
+
+var attendance = await _attendedEventRepo.GetAsync(forEvent.EventId, author.UserId);
+if (attendance == null)
+    throw new InvalidOperationException("You must first enroll to this event!.");
 
             bool hasPhoto = !string.IsNullOrWhiteSpace(photoPath);
             bool hasText = !string.IsNullOrWhiteSpace(text);
-            //check if user is in attended events, if no exception
+
 
             if (!hasPhoto && !hasText)
                 throw new InvalidOperationException("A memory must have at least a photo or text.");
