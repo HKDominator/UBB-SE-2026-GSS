@@ -36,7 +36,7 @@ namespace Events_GSS.Views
                 var userService = App.Services.GetRequiredService<IUserService>();
                 var reputationService = App.Services.GetRequiredService<IReputationService>();
                 var announcementService = App.Services.GetRequiredService<IAnnouncementService>();
-                ViewModel = new AttendedEventViewModel(attendedEventService, userService, reputationService, announcementService);
+                ViewModel = new AttendedEventViewModel(attendedEventService, userService, announcementService, reputationService);
                 DataContext = ViewModel;
             }
 
