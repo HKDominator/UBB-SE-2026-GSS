@@ -12,6 +12,7 @@ DELETE FROM QuestMemories;
 DELETE FROM Quests;
 DELETE FROM AttendedEvents;
 DELETE FROM Events;
+DELETE FROM users_RP_scores;
 DELETE FROM Users;
 
 DBCC CHECKIDENT ('Users', RESEED, 0);
@@ -22,17 +23,26 @@ DBCC CHECKIDENT ('Discussions', RESEED, 0);
 
 SET IDENTITY_INSERT Users ON;
 
-INSERT INTO Users (Id, Name, Email, PasswordHash, ReputationPoints)
-VALUES
-(1, 'Alice Admin',      'alice@test.com',   'hash123', 340),
-(2, 'Bob User',         'bob@test.com',     'hash456', 120),
-(3, 'Carol User',       'carol@test.com',   'hash789', 75),
-(4, 'Dan Gheorghe',     'dan@test.com',     'blah',    510),
-(5, 'Elena Moldovan',   'elena@test.com',   'blah',    0),
-(6, 'Florin Stanescu',  'florin@test.com',  'blah',    -50);
+INSERT INTO Users (Id, Name, Email, PasswordHash)
+VALUES 
+(1, 'Alice Admin', 'alice@test.com', 'hash123'),
+(2, 'Bob User', 'bob@test.com', 'hash456'),
+(3, 'Carol User', 'carol@test.com', 'hash789'),
+(4, 'Dan Gheorghe', 'dan@test.com', 'blah'),
+(5, 'Elena Moldovan', 'elena@test.com', 'blah'),
+(6, 'Florin Stanescu', 'florin@test.com', 'blah');
 
 SET IDENTITY_INSERT Users OFF;
 
+-- Seed reputation scores
+INSERT INTO users_RP_scores (UserId, ReputationPoints, Tier) VALUES
+(1, 340, 'Organizer'),
+(2, 120, 'Contributor'),
+(3,  75, 'Contributor'),
+(4, 510, 'Community Leader'),
+(5,   0, 'Newcomer'),
+(6, -50, 'Newcomer');
+ 
 SET IDENTITY_INSERT Events ON;
 
 INSERT INTO Events (EventId, Name, Location, StartDateTime, EndDateTime, IsPublic, Description, MaximumPeople, EventBannerPath, CategoryId, AdminId, SlowModeSeconds)

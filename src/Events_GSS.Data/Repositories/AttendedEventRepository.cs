@@ -31,7 +31,7 @@ namespace Events_GSS.Data.Repositories
             {
                 UserId = (int)reader["AdminId"],
                 Name = (string)reader["AdminName"],
-                ReputationPoints = (int)reader["AdminRP"]
+                ReputationPoints = reader["AdminRP"] == DBNull.Value ? 0 : (int)reader["AdminRP"]
             };
 
             var ev = new Event
@@ -54,7 +54,7 @@ namespace Events_GSS.Data.Repositories
             {
                 UserId = (int)reader["UserId"],
                 Name = (string)reader["UserName"],
-                ReputationPoints = (int)reader["ReputationPoints"]
+                ReputationPoints = reader["ReputationPoints"] == DBNull.Value ? 0 : (int)reader["ReputationPoints"]
             };
 
             return new AttendedEvent(ev, user,
@@ -72,13 +72,15 @@ namespace Events_GSS.Data.Repositories
             e.Description, e.MaximumPeople, e.EventBannerPath,
             e.SlowModeSeconds,
             c.CategoryId, c.Title AS CategoryTitle,
-            u.Id AS UserId, u.Name AS UserName, u.ReputationPoints,
-            a.Id AS AdminId, a.Name AS AdminName, a.ReputationPoints AS AdminRP
+            u.Id AS UserId, u.Name AS UserName, urp.ReputationPoints,
+            a.Id AS AdminId, a.Name AS AdminName, arp.ReputationPoints AS AdminRP
             FROM AttendedEvents ae
             INNER JOIN Events e ON ae.EventId = e.EventId
             INNER JOIN Users u ON ae.UserId = u.Id
+            LEFT JOIN users_RP_scores urp ON u.Id = urp.UserId
             LEFT JOIN Categories c ON e.CategoryId = c.CategoryId
-            INNER JOIN Users a ON e.AdminId = a.Id";
+            INNER JOIN Users a ON e.AdminId = a.Id
+            LEFT JOIN users_RP_scores arp ON a.Id = arp.UserId";
 
         public async Task AddAsync(AttendedEvent attendedEvent)
         {
