@@ -84,8 +84,9 @@ public partial class App : Application
         services.AddSingleton<INavigationService>(navService);
 
         // ViewModels
-        //services.AddTransient<NavigationBarViewModel>();
-        //services.AddTransient<EventListingViewModel>();
+        // ViewModels
+        services.AddTransient<NavigationBarViewModel>();
+        services.AddTransient<EventListingViewModel>();
         Services = services.BuildServiceProvider();
 
 
