@@ -93,12 +93,19 @@ public sealed partial class EventDetailPage : Page
         if (_event == null) return;
 
         JoinButton.Content = _isAttending ? "Not attend event anymore" : "Join Event";
-        JoinButton.IsEnabled = _event.MaximumPeople == null || _event.EnrolledCount < _event.MaximumPeople;
+        // Disable the join action only when the user is NOT already attending and the event reached capacity.
+        JoinButton.IsEnabled = _isAttending || _event.MaximumPeople == null || _event.EnrolledCount < _event.MaximumPeople;
     }
 
     private async void OnJoinLeaveClicked(object sender, RoutedEventArgs e)
     {
         if (_event == null || _attendedService == null) return;
+
+        // If user is not attending and the event is full, do nothing (button should be disabled already).
+        if (!_isAttending && _event.MaximumPeople.HasValue && _event.EnrolledCount >= _event.MaximumPeople.Value)
+        {
+            return;
+        }
 
         if (_isAttending)
         {

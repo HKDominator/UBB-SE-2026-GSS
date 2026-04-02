@@ -7,7 +7,12 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:models="using:Events_GSS.Data.Models"
+    xmlns:conv="using:Events_GSS.Converters"
     mc:Ignorable="d">
+
+    <Page.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter" />
+    </Page.Resources>
 
     <Grid>
         <Grid.RowDefinitions>
@@ -175,10 +180,7 @@
                                                 </TextBlock>
                                             </StackPanel>
 
-                                            <Button
-                        Grid.Column="1"
-                        Content="Join"
-                        Style="{ThemeResource AccentButtonStyle}"/>
+                                            <!-- Join button removed from listing cards; available on event details page -->
                                         </Grid>
 
                                     </StackPanel>
@@ -201,11 +203,6 @@
             HorizontalAlignment="Left"
             Style="{ThemeResource AccentButtonStyle}"/>
 
-        <ProgressRing
-            Grid.Row="1"
-            x:Name="LoadingRing"
-            IsActive="True"
-            HorizontalAlignment="Center"
-            VerticalAlignment="Center" />
+        <!-- Removed static loading ring that overlapped the search bar. Use the per-list ProgressRing bound to ViewModel.IsLoading instead. -->
     </Grid>
 </Page>
