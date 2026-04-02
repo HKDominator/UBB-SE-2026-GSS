@@ -19,10 +19,7 @@ namespace Events_GSS.Data.Services.notificationServices
         {
             User user = new User();
             user.UserId = userId;
-            Notification notification = new Notification();
-            notification.Title = title;
-            notification.Description = description;
-            notification.User = user;
+            Notification notification = new Notification(user, title, description);
             await _notificationRepository.AddAsync(notification);
         }
         public async Task<List<Notification>> GetNotificationsAsync(int userId)
