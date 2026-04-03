@@ -20,7 +20,8 @@ public sealed partial class CreateEventControl : UserControl
         var userService = App.Services.GetRequiredService<IUserService>();
         var eventService = App.Services.GetRequiredService<IEventService>();
         var questService = App.Services.GetRequiredService<IQuestService>();
-        ViewModel = new CreateEventViewModel(userService, eventService, questService);
+        var attendedEventService = App.Services.GetRequiredService<IAttendedEventService>();
+        ViewModel = new CreateEventViewModel(userService, eventService, questService, attendedEventService);
         this.InitializeComponent();
 
         Step1View.ViewModel = ViewModel;
