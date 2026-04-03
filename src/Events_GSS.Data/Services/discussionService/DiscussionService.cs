@@ -11,6 +11,7 @@ using Events_GSS.Data.Repositories;
 using Events_GSS.Data.Repositories.eventRepository;
 using Events_GSS.Data.Services.discussionService;
 using Events_GSS.Data.Services.Interfaces;
+using Events_GSS.Data.Services.notificationServices;
 using Events_GSS.Data.Services.reputationService;
 
 namespace Events_GSS.Data.Services;
@@ -20,15 +21,18 @@ public class DiscussionService : IDiscussionService
     private readonly IDiscussionRepository _repo;
     private readonly IEventRepository _eventRepo;
     private readonly IReputationService _reputationService;
+    private readonly INotificationService _notificationService;
 
     public DiscussionService(
         IDiscussionRepository repo,
         IEventRepository eventRepo,
-        IReputationService reputationService)
+        IReputationService reputationService,
+        INotificationService notificationService)
     {
         _repo = repo;
         _eventRepo = eventRepo;
         _reputationService = reputationService;
+        _notificationService = notificationService;
     }
 
     // ── Messages ──────────────────────────────────────────────────────────────
@@ -131,9 +135,16 @@ public class DiscussionService : IDiscussionService
                     .Select(g => g.First())
                     .ToList();
 
-                // TODO: Call notification service for each mentionedUser
-                // e.g.: foreach (var u in mentionedUsers)
-                //           await _notificationService.SendAsync(u.UserId, "Mention", $"You were mentioned by ...");
+                var mentioner = participants.FirstOrDefault(p => p.UserId == userId);
+                string mentionerName = mentioner?.Name ?? "Someone";
+
+                foreach (var u in mentionedUsers)
+                {
+                    await _notificationService.NotifyAsync(
+                        u.UserId,
+                        "You were mentioned!",
+                        $"{mentionerName} mentioned you in the discussion.");
+                }
             }
         }
     }
