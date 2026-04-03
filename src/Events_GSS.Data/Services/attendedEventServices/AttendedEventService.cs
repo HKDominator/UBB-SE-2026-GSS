@@ -61,6 +61,11 @@ namespace Events_GSS.Services
                 new ReputationMessage(userId, ReputationAction.EventAttended, eventId));
         }
 
+        public async Task<AttendedEvent?> GetAsync(int eventId, int userId)
+        {
+            return await _repo.GetAsync(eventId, userId);
+        }
+
         public async Task LeaveEventAsync(int eventId, int userId)
         {
             await _repo.DeleteAsync(eventId, userId);
