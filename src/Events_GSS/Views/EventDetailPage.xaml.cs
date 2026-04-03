@@ -18,6 +18,9 @@ public sealed partial class EventDetailPage : Page
     private INavigationService? _nav;
     private Event? _currentEvent;
 
+    private IAttendedEventService? _attendedEventService;
+    private bool _isEnrolled;
+
     public EventDetailPage()
     {
         InitializeComponent();
@@ -68,6 +71,9 @@ public sealed partial class EventDetailPage : Page
         var memVm = new MemoryViewModel(memService);
         MemoryTab.ViewModel = memVm;
         _ = memVm.InitializeAsync(ev, currentUser);
+
+        _attendedEventService = App.Services.GetRequiredService<IAttendedEventService>();
+        _ = LoadEnrollmentStatusAsync(ev, userId);
     }
 
     private void OnBackClicked(object sender, RoutedEventArgs e)
@@ -82,4 +88,46 @@ public sealed partial class EventDetailPage : Page
             _nav?.NavigateTo(PageKeys.EventStatistics, _currentEvent);
         }
     }
+
+    private async Task LoadEnrollmentStatusAsync(Event ev, int userId)
+    {
+        var attendedEvent = await _attendedEventService!.GetAsync(ev.EventId, userId);
+        _isEnrolled = attendedEvent != null;
+        JoinLeaveButton.Content = _isEnrolled ? "Leave Event" : "Join Event";
+    }
+
+    private async void OnJoinLeaveClicked(object sender, RoutedEventArgs e)
+    {
+        if (_currentEvent == null) return;
+
+        var userService = App.Services.GetRequiredService<IUserService>();
+        var userId = userService.GetCurrentUser().UserId;
+
+        try
+        {
+            JoinLeaveButton.IsEnabled = false;
+
+            if (_isEnrolled)
+            {
+                await _attendedEventService!.LeaveEventAsync(_currentEvent.EventId, userId);
+                _isEnrolled = false;
+                JoinLeaveButton.Content = "Join Event";
+            }
+            else
+            {
+                await _attendedEventService!.AttendEventAsync(_currentEvent.EventId, userId);
+                _isEnrolled = true;
+                JoinLeaveButton.Content = "Leave Event";
+            }
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"Join/Leave failed: {ex.Message}");
+        }
+        finally
+        {
+            JoinLeaveButton.IsEnabled = true;
+        }
+    }
+
 }

@@ -33,6 +33,14 @@
             </StackPanel>
 
             <Button
+            x:Name="JoinLeaveButton"
+            Grid.Column="1"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Center"
+            Margin="0,0,150,0"
+            Click="OnJoinLeaveClicked" />
+            
+            <Button
                 x:Name="StatisticsButton"
                 Grid.Column="1"
                 HorizontalAlignment="Right"
