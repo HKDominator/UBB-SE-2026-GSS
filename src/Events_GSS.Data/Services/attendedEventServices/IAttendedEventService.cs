@@ -8,6 +8,8 @@ namespace Events_GSS.Services.Interfaces
 
         Task<List<AttendedEvent>> GetEventsByArchiveStatusAsync(int userId, bool isArchived);
 
+        Task<AttendedEvent?> GetAsync(int eventId, int userId);
+
         Task AttendEventAsync(int eventId, int userId);
 
         Task LeaveEventAsync(int eventId, int userId);
