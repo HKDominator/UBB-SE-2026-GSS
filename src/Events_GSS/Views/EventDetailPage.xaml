@@ -37,7 +37,7 @@
             Grid.Column="1"
             HorizontalAlignment="Right"
             VerticalAlignment="Center"
-            Margin="0,0,100,0"
+            Margin="0,0,150,0"
             Click="OnJoinLeaveClicked" />
             
             <Button
