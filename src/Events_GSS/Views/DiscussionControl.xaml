@@ -15,9 +15,6 @@
 
     <Grid RowDefinitions="Auto,Auto,*,Auto,Auto">
 
-        <!-- ═══════════════════════════════════════════════════════
-             ROW 0 — Error Banner
-             ═══════════════════════════════════════════════════════ -->
         <Border
             Grid.Row="0"
             Background="{ThemeResource SystemFillColorCriticalBackgroundBrush}"
@@ -31,9 +28,6 @@
                 TextWrapping="Wrap" />
         </Border>
 
-        <!-- ═══════════════════════════════════════════════════════
-             ROW 1 — Admin Controls (Slow Mode)
-             ═══════════════════════════════════════════════════════ -->
         <Border
             Grid.Row="1"
             Visibility="{x:Bind ViewModel.IsEventAdmin, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
@@ -75,9 +69,6 @@
             </Grid>
         </Border>
 
-        <!-- ═══════════════════════════════════════════════════════
-             ROW 2 — Messages List
-             ═══════════════════════════════════════════════════════ -->
         <ListView
             x:Name="MessagesListView"
             Grid.Row="2"
@@ -110,9 +101,9 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
-                        <!-- ── Reply Reference ─────────────────────── -->
                         <Border
                             Grid.Row="0"
                             Visibility="{x:Bind ReplyTo, Mode=OneWay, Converter={StaticResource NullToCollapsed}}"
@@ -121,7 +112,9 @@
                             Padding="8,4"
                             Margin="0,0,0,6"
                             BorderBrush="{ThemeResource AccentFillColorDefaultBrush}"
-                            BorderThickness="2,0,0,0">
+                            BorderThickness="2,0,0,0"
+                            Tag="{x:Bind ReplyTo.Id}"
+                            Tapped="OnReplyReferenceTapped">
                             <StackPanel>
                                 <TextBlock
                                     Text="{x:Bind ReplyTo.Author.Name, Mode=OneWay, FallbackValue=''}"
@@ -137,15 +130,15 @@
                             </StackPanel>
                         </Border>
 
-                        <!-- ── Deleted-original indicator ──────────── -->
                         <Border
-                            Grid.Row="0"
+                            Grid.Row="1"
                             Visibility="{x:Bind IsOriginalDeleted, Mode=OneWay, Converter={StaticResource BoolToVisibility}}"
                             Background="{ThemeResource SystemFillColorNeutralBackgroundBrush}"
                             CornerRadius="4"
                             Padding="8,4"
-                            Margin="0,0,0,6"
-                            Opacity="0.6">
+                            Margin="24,0,0,6"
+                            Opacity="0.6"
+                            HorizontalAlignment="Left">
                             <TextBlock
                                 Text="↩ Original message was deleted"
                                 Style="{ThemeResource CaptionTextBlockStyle}"
@@ -153,9 +146,8 @@
                                 FontStyle="Italic" />
                         </Border>
 
-                        <!-- ── Author + Timestamp + Edited ─────────── -->
                         <StackPanel
-                            Grid.Row="1"
+                            Grid.Row="2"
                             Orientation="Horizontal"
                             Spacing="8"
                             Margin="0,0,0,4">
@@ -180,33 +172,45 @@
                             </Border>
                         </StackPanel>
 
-                        <!-- ── Message Content with @mention highlighting ── -->
                         <TextBlock
-                            Grid.Row="2"
+                            Grid.Row="3"
                             Text="{x:Bind Message, FallbackValue=''}"
                             TextWrapping="Wrap"
                             Style="{ThemeResource BodyTextBlockStyle}"
                             Margin="0,0,0,4"
-                            Visibility="{x:Bind Message, Mode=OneWay, Converter={StaticResource NullToCollapsed}}" />       
+                            Visibility="{x:Bind Message, Mode=OneWay, Converter={StaticResource NullToCollapsed}}" />
 
-                        <!-- ── Media Indicator ─────────────────────── -->
                         <StackPanel
-                            Grid.Row="3"
-                            Orientation="Horizontal"
-                            Spacing="6"
+                            Grid.Row="4"
                             Margin="0,0,0,4"
                             Visibility="{x:Bind MediaPath, Mode=OneWay, Converter={StaticResource NullToCollapsed}}">
-                            <FontIcon Glyph="&#xE722;" FontSize="14"
-                                      Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
-                            <TextBlock
-                                Text="Media attached"
-                                Style="{ThemeResource CaptionTextBlockStyle}"
-                                Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                            <Border 
+                                CornerRadius="4" 
+                                Margin="0,0,0,4" 
+                                HorizontalAlignment="Left">
+
+                                <Image
+                                    Source="{Binding MediaPath}"
+                                    MaxHeight="250"
+                                    MaxWidth="400"
+                                    Stretch="Uniform" />
+                            </Border>
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                                <FontIcon 
+                                    Glyph="&#xE722;" 
+                                    FontSize="14"
+                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}" />
+                                <TextBlock
+                                    Text="{x:Bind MediaPath, Mode=OneWay}"
+                                    Style="{ThemeResource CaptionTextBlockStyle}"
+                                    Foreground="{ThemeResource AccentTextFillColorPrimaryBrush}"
+                                    MaxLines="1"
+                                    TextTrimming="CharacterEllipsis" />
+                            </StackPanel>
                         </StackPanel>
 
-                        <!-- ── Reaction Display ────────────────────── -->
                         <ItemsRepeater
-                            Grid.Row="4"
+                            Grid.Row="5"
                             ItemsSource="{x:Bind ReactionGroups, Mode=OneWay}"
                             Margin="0,0,0,4"
                             Visibility="{x:Bind HasReactions, Converter={StaticResource BoolToVisibility}}">
@@ -223,18 +227,19 @@
                                         Background="{ThemeResource CardBackgroundFillColorSecondaryBrush}">
                                         <StackPanel Orientation="Horizontal" Spacing="4">
                                             <TextBlock Text="{x:Bind Emoji}" FontSize="14" />
-                                            <TextBlock Text="{x:Bind Count}" FontSize="12"
-                                                       Style="{ThemeResource CaptionTextBlockStyle}"
-                                                       VerticalAlignment="Center" />
+                                            <TextBlock 
+                                                Text="{x:Bind Count}" 
+                                                FontSize="12"
+                                                Style="{ThemeResource CaptionTextBlockStyle}"
+                                                VerticalAlignment="Center" />
                                         </StackPanel>
                                     </Border>
                                 </DataTemplate>
                             </ItemsRepeater.ItemTemplate>
                         </ItemsRepeater>
 
-                        <!-- ── Actions Row ─────────────────────────── -->
                         <StackPanel
-                            Grid.Row="5"
+                            Grid.Row="6"
                             Orientation="Horizontal"
                             Spacing="4">
 
@@ -275,7 +280,6 @@
                                 Visibility="{x:Bind CanDelete, Converter={StaticResource BoolToVisibility}}"
                                 Click="OnDeleteClicked" />
 
-                            <!-- Admin-only Mute button -->
                             <Button
                                 FontSize="12"
                                 Padding="6,2"
@@ -287,6 +291,19 @@
                                     <TextBlock Text="Mute" />
                                 </StackPanel>
                             </Button>
+
+                            <Button
+                                FontSize="12"
+                                Padding="6,2"
+                                Tag="{x:Bind}"
+                                Visibility="{x:Bind ShowMuteButton, Converter={StaticResource BoolToVisibility}}"
+                                Click="OnUnmuteClicked">
+                                <StackPanel Orientation="Horizontal" Spacing="4">
+                                    <FontIcon Glyph="&#xE767;" FontSize="12" />
+                                    <TextBlock Text="Unmute" />
+                                </StackPanel>
+                            </Button>
+
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
@@ -304,9 +321,6 @@
             </ListView.Footer>
         </ListView>
 
-        <!-- ═══════════════════════════════════════════════════════
-             ROW 3 — Reply Preview + Mute Banner + Media Preview
-             ═══════════════════════════════════════════════════════ -->
         <StackPanel Grid.Row="3" Spacing="0">
 
             <Border
@@ -375,9 +389,6 @@
             </Border>
         </StackPanel>
 
-        <!-- ═══════════════════════════════════════════════════════
-             ROW 4 — Input Area
-             ═══════════════════════════════════════════════════════ -->
         <Grid
             Grid.Row="4"
             ColumnDefinitions="Auto,*,Auto"
@@ -417,7 +428,6 @@
             </Button>
         </Grid>
 
-        <!-- Loading overlay -->
         <ProgressRing
             Grid.Row="2"
             IsActive="{x:Bind ViewModel.IsLoading, Mode=OneWay}"

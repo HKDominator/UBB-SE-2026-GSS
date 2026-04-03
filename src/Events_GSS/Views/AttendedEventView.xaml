@@ -16,6 +16,7 @@
         <converters:AchievementOpacityConverter x:Key="AchievementOpacityConverter"/>
         <converters:AchievementBadgeConverter x:Key="AchievementBadgeConverter"/>
         <converters:AchievementStatusConverter x:Key="AchievementStatusConverter"/>
+        <converters:NonZeroToVisibilityConverter x:Key="NonZeroToVisibilityConverter"/>
     </Page.Resources>
 
     <Grid RowDefinitions="Auto,Auto,*" Padding="24" RowSpacing="16">
@@ -106,6 +107,15 @@
                                                 Text="⭐"
                                                 FontSize="14"
                                                 Visibility="{Binding IsFavourite}" />
+                                            <Border Background="{ThemeResource AccentFillColorDefaultBrush}"
+                                                CornerRadius="8" Padding="6,2" MinWidth="20"
+                                                VerticalAlignment="Center"
+                                                Visibility="{Binding UnreadAnnouncementCount, 
+                                                    Converter={StaticResource NonZeroToVisibilityConverter}}">
+                                                                                    <TextBlock Text="{Binding UnreadAnnouncementCount}"
+                                                       Foreground="White" FontSize="11"
+                                                       HorizontalAlignment="Center"/>
+                                            </Border>       
                                         </StackPanel>
 
                                         <StackPanel Grid.Row="0" Grid.Column="1" Orientation="Horizontal" Spacing="4">

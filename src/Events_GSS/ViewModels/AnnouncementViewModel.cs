@@ -22,6 +22,9 @@ public partial class AnnouncementViewModel : ObservableObject
     private readonly Event _event;
     private readonly int _currentUserId;
 
+    public IAnnouncementService GetAnnouncementService() => _service;
+    public int GetEventId() => _event.EventId;
+
     public AnnouncementViewModel(
         Event forEvent,
         IAnnouncementService service,

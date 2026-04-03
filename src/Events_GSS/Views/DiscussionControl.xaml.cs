@@ -85,6 +85,20 @@ public sealed partial class DiscussionControl : UserControl
         }
     }
 
+    private void OnReplyReferenceTapped(object sender, TappedRoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement fe || ViewModel is null) return;
+
+        // The Tag holds the original message's Id (int)
+        if (fe.Tag is not int originalId) return;
+
+        var originalItem = ViewModel.Messages.FirstOrDefault(m => m.Id == originalId);
+        if (originalItem is not null)
+        {
+            MessagesListView.ScrollIntoView(originalItem, ScrollIntoViewAlignment.Leading);
+        }
+    }
+
     // ── Reactions ────────────────────────────────────────────────────────────
 
     private void OnEmojiClicked(object sender, RoutedEventArgs e)
@@ -211,6 +225,34 @@ public sealed partial class DiscussionControl : UserControl
         }
     }
 
+    //  ── Unmute ─────────────────────────────────────────────────────
+
+    private async void OnUnmuteClicked(object sender, RoutedEventArgs e)
+    {
+        if (sender is not FrameworkElement fe
+            || fe.Tag is not DiscussionMessageItemViewModel item
+            || ViewModel is null
+            || !ViewModel.IsEventAdmin
+            || item.Author is null)
+            return;
+
+        var dialog = new ContentDialog
+        {
+            Title = $"Unmute {item.Author.Name}?",
+            Content = $"This will lift any active mute for {item.Author.Name} in this event.",
+            PrimaryButtonText = "Unmute",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Primary,
+            XamlRoot = this.XamlRoot
+        };
+
+        var result = await dialog.ShowAsync();
+        if (result == ContentDialogResult.Primary)
+        {
+            ViewModel.UnmuteUserCommand.Execute(item.Author.UserId);
+        }
+    }
+
     // ── Slow Mode Config ─────────────────────────────────────────────────────
 
     private async void OnConfigureSlowModeClicked(object sender, RoutedEventArgs e)
@@ -309,12 +351,18 @@ public sealed partial class DiscussionControl : UserControl
     {
         if (ViewModel is null || ViewModel.Messages.Count == 0) return;
 
-        DispatcherQueue.TryEnqueue(() =>
-        {
-            MessagesListView.ScrollIntoView(
-                ViewModel.Messages[^1],
-                ScrollIntoViewAlignment.Leading);
-        });
+        // Use Low priority so the ListView layout pass completes first
+        DispatcherQueue.TryEnqueue(
+            Microsoft.UI.Dispatching.DispatcherQueuePriority.Low,
+            () =>
+            {
+                if (ViewModel?.Messages.Count > 0)
+                {
+                    MessagesListView.ScrollIntoView(
+                        ViewModel.Messages[^1],
+                        ScrollIntoViewAlignment.Leading);
+                }
+            });
     }
 
     private void UpdateEmptyState()

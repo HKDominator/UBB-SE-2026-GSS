@@ -12,6 +12,8 @@ namespace Events_GSS.Data.Models
         public Boolean IsArchived { get; set; }
         public Boolean IsFavourite {  get; set; }
 
+        public int UnreadAnnouncementCount { get; set; }
+
         public AttendedEvent(Event @event, User user, DateTime enrollmentDate, bool isArchived, bool isFavourite)
         {
             Event = @event;

@@ -99,6 +99,15 @@ public class AnnouncementService : IAnnouncementService
     {
         await _repo.RemoveReactionAsync(annId, userId);
     }
+    public async Task<Dictionary<int, int>> GetUnreadCountsForUserAsync(int userId)
+    {
+        return await _repo.GetUnreadCountsForUserAsync(userId);
+    }
+
+    public async Task<List<User>> GetAllParticipantsAsync(int eventId)
+    {
+        return await _repo.GetAllParticipantsAsync(eventId);
+    }
 
     private async Task EnsureAdminAsync(int eventId, int userId)
     {

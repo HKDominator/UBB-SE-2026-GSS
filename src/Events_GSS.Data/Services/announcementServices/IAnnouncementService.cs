@@ -18,5 +18,7 @@ public interface IAnnouncementService
     Task<(List<AnnouncementReadReceipt>Readers, int TotalParticipants)> GetReadReceiptsAsync(int annId, int eventId, int userId);
     Task ReactAsync(int annId, int userId, string emoji);
     Task RemoveReactionAsync(int annId, int userId);
-    
+    Task<Dictionary<int, int>> GetUnreadCountsForUserAsync(int userId);
+    Task<List<User>> GetAllParticipantsAsync(int eventId);
+
 }
