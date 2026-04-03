@@ -19,12 +19,14 @@ public partial class CreateEventViewModel : ObservableObject
     private readonly IUserService _userService;
     private readonly IEventService _eventService;
     private readonly IQuestService _questService;
+    private readonly IAttendedEventService _attendedEventService;
 
-    public CreateEventViewModel(IUserService userService, IEventService eventService, IQuestService questService)
+    public CreateEventViewModel(IUserService userService, IEventService eventService, IQuestService questService, IAttendedEventService attendedEventService)
     {
         _userService = userService;
         _eventService = eventService;
         _questService = questService;
+        _attendedEventService = attendedEventService;
     }
 
     //VM1
@@ -243,6 +245,7 @@ public event Action<CreateEventDto?>? CloseRequested;
         };
         int newEventId = await _eventService.CreateEventAsync(eventEntity);
         eventEntity.EventId = newEventId;
+        await _attendedEventService.AttendEventAsync(newEventId, _userService.GetCurrentUser().UserId);
 
         foreach (var quest in dto.SelectedQuests)
         {
