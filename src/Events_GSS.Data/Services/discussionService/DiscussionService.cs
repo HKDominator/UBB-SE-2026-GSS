@@ -122,19 +122,17 @@ public class DiscussionService : IDiscussionService
             new ReputationMessage(userId, ReputationAction.DiscussionMessagePosted));
 
         // ── Parse @mentions ──────────────────────────────────
-        if (!string.IsNullOrWhiteSpace(text))
+        if (!string.IsNullOrWhiteSpace(text) && text.Contains('@'))
         {
-            var mentionedNames = ParseMentions(text);
-            if (mentionedNames.Count > 0)
-            {
-                var participants = await _repo.GetEventParticipantsAsync(eventId);
-                var mentionedUsers = participants
-                    .Where(p => mentionedNames.Contains(p.Name, StringComparer.OrdinalIgnoreCase))
-                    .Where(p => p.UserId != userId) // don't notify yourself
-                    .GroupBy(p => p.UserId)          // one notification per user
-                    .Select(g => g.First())
-                    .ToList();
+            var participants = await _repo.GetEventParticipantsAsync(eventId);
+            var mentionedUsers = FindMentionedUsers(text, participants)
+                .Where(p => p.UserId != userId)
+                .GroupBy(p => p.UserId)
+                .Select(g => g.First())
+                .ToList();
 
+            if (mentionedUsers.Count > 0)
+            {
                 var mentioner = participants.FirstOrDefault(p => p.UserId == userId);
                 string mentionerName = mentioner?.Name ?? "Someone";
 
@@ -235,21 +233,28 @@ public class DiscussionService : IDiscussionService
         return await _repo.GetEventParticipantsAsync(eventId);
     }
 
-    // ── Mention Parser ───────────────────────────────────────────────────────
-
-    /// <summary>
-    /// Extracts unique @mentioned names from message text.
-    /// Supports "@Name" and "@First Last" (two words after @).
-    /// </summary>
-    public static List<string> ParseMentions(string text)
+    public static List<User> FindMentionedUsers(string text, List<User> participants)
     {
-        var matches = Regex.Matches(text, @"@(\w+(?:\s+\w+)?)");
-        return matches
-            .Select(m => m.Groups[1].Value.Trim())
-            .Distinct(StringComparer.OrdinalIgnoreCase)
-            .ToList();
-    }
+        var mentioned = new List<User>();
+        foreach (var p in participants)
+        {
+            // Check for @FullName (e.g. @Bob User)
+            if (text.Contains($"@{p.Name}", StringComparison.OrdinalIgnoreCase))
+            {
+                mentioned.Add(p);
+                continue;
+            }
 
+            // Check for @FirstName (e.g. @Bob)
+            var firstName = p.Name.Split(' ')[0];
+            if (text.Contains($"@{firstName}", StringComparison.OrdinalIgnoreCase))
+            {
+                mentioned.Add(p);
+            }
+        }
+
+        return mentioned;
+    }
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private async Task<Event> GetEventOrThrowAsync(int eventId)
